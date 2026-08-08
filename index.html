@@ -13,18 +13,18 @@
     --card-brd:#ececec;
     --ink:#2b2b2b;
     --muted:#7a7a7a;
-    --amber:#e6a817;
-    --amber-dark:#c98a00;
-    --sub:#b98a1c;
-    --logo-sh:#fff3c0;
+    --amber:#141414;
+    --amber-dark:#141414;
+    --sub:#444444;
+    --logo-sh:transparent;
     --green:#5fa85a;
     --yellow:#e3b93b;
     --grey:#dcdcdc;
     --grey-ink:#5a5a5a;
     --shadow:0 6px 20px rgba(0,0,0,.08);
     --overlay:rgba(30,25,0,.42);
-    --chip-bg:#fff4d1;
-    --chip-ink:#9a7208;
+    --chip-bg:#eeeeee;
+    --chip-ink:#333333;
     --rlose:#c0552f;
     --rwin:#4c9a46;
     --strip-brd:#eeeeee;
@@ -35,9 +35,9 @@
     --card-brd:#2e2f33;
     --ink:#eaeaeb;
     --muted:#9a9aa0;
-    --amber:#e6b53c;
-    --amber-dark:#f0c24a;
-    --sub:#cfa93e;
+    --amber:#f3f3f3;
+    --amber-dark:#f3f3f3;
+    --sub:#c9c9cc;
     --logo-sh:transparent;
     --green:#538d4e;
     --yellow:#b59f3b;
@@ -45,8 +45,8 @@
     --grey-ink:#dcdcdc;
     --shadow:0 6px 22px rgba(0,0,0,.5);
     --overlay:rgba(0,0,0,.6);
-    --chip-bg:#33342c;
-    --chip-ink:#e6c766;
+    --chip-bg:#2c2d31;
+    --chip-ink:#eaeaeb;
     --rlose:#e0765a;
     --rwin:#7bbf6f;
     --strip-brd:#2e2f33;
@@ -91,7 +91,7 @@
 
   .modes{display:flex;background:var(--card);border:1px solid var(--card-brd);border-radius:14px;padding:4px;box-shadow:var(--shadow);margin-top:14px;gap:4px}
   .modebtn{border:none;background:transparent;cursor:pointer;font-weight:800;letter-spacing:1px;font-size:13px;color:var(--muted);padding:9px 20px;border-radius:11px;transition:background .15s,color .15s}
-  .modebtn.active{background:linear-gradient(180deg,var(--amber),var(--amber-dark));color:#fff}
+  .modebtn.active{background:var(--amber-dark);color:var(--page-bg)}
 
   #board{margin:18px 0 6px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:min(92vw,420px)}
   .tile{position:relative;aspect-ratio:1/1;border-radius:12px;display:flex;align-items:center;justify-content:center;
@@ -110,7 +110,7 @@
   #actions{margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;min-height:10px}
   .btn{border:none;cursor:pointer;font-weight:900;letter-spacing:1px;font-size:15px;padding:13px 22px;border-radius:16px;box-shadow:var(--shadow);transition:transform .1s}
   .btn:active{transform:scale(.96)}
-  .btn.primary{background:linear-gradient(180deg,var(--amber),var(--amber-dark));color:#fff}
+  .btn.primary{background:var(--amber-dark);color:var(--page-bg)}
   .btn.ghost{background:var(--card);color:var(--amber-dark);border:1px solid var(--card-brd)}
 
   #cdbar{display:none;margin-top:16px;text-align:center;background:var(--card);border:1px solid var(--card-brd);border-radius:16px;padding:12px 20px;box-shadow:var(--shadow)}
@@ -177,7 +177,7 @@
 
   <div id="board"></div>
 
-  <p class="hint" id="hintText">İki karoya dokunarak harflerin yerini değiştir. <b>Yeşil</b> doğru yerde, <b>sarı</b> kelimede var ama yanlış yerde.</p>
+  <p class="hint" id="hintText"></p>
 
   <div id="actions"></div>
 
@@ -311,7 +311,7 @@ const hintTextEl = document.getElementById('hintText');
 const cdbarEl = document.getElementById('cdbar');
 
 let mode='daily';   // daily | unlimited
-let solution, cur, swapsLeft, moves=0, selected=null, curPuzzle;
+let solution, cur, swapsLeft, selected=null, curPuzzle;
 let phase='play';   // play | trying | win | gaveup | animating
 let dayIdCur=null;
 let unlimSeed=1;
@@ -439,16 +439,10 @@ function render(){
     t.addEventListener('click',()=>onTile(r,c));
     boardEl.appendChild(t);
   }
-  if(mode==='daily'){
-    swapLblEl.textContent='HAMLE KALDI';
-    swapNumEl.textContent=Math.max(0,swapsLeft);
-    starPrevEl.style.visibility='';
-    starPrevEl.textContent=starStr(clamp(swapsLeft,0,5));
-  } else {
-    swapLblEl.textContent='HAMLE';
-    swapNumEl.textContent=moves;
-    starPrevEl.style.visibility='hidden';
-  }
+  swapLblEl.textContent='HAMLE KALDI';
+  swapNumEl.textContent=Math.max(0,swapsLeft);
+  starPrevEl.style.visibility='';
+  starPrevEl.textContent=starStr(clamp(swapsLeft,0,5));
 }
 
 /* ---------- Etkileşim ---------- */
@@ -460,15 +454,12 @@ function onTile(r,c){
   const changed = cur[a.r][a.c]!==cur[r][c];
   [cur[a.r][a.c],cur[r][c]]=[cur[r][c],cur[a.r][a.c]];
   selected=null;
-  if(changed){
-    if(mode==='daily'){ if(phase==='play' && swapsLeft>0) swapsLeft--; }
-    else { moves++; }
-  }
+  if(changed && phase==='play' && swapsLeft>0) swapsLeft--;
   render();
   if(changed){pulse(a.r,a.c);pulse(r,c);}
   save();
   if(isSolved()){finishWin();return;}
-  if(mode==='daily' && phase==='play' && swapsLeft<=0){ revealAndLose(); }
+  if(phase==='play' && swapsLeft<=0){ revealAndLose(); }
 }
 function pulse(r,c){
   const el=boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
@@ -508,7 +499,7 @@ function shareResult(){
   const tag = mode==='daily' ? '#'+dayIdCur : 'Sınırsız';
   let txt;
   if(phase==='win'){
-    const s = mode==='daily' ? '★'.repeat(clamp(swapsLeft,0,5)) : (moves+' hamle');
+    const s = '★'.repeat(clamp(swapsLeft,0,5));
     txt = `Kelime Waffle ${tag} — çözüldü (${s})`;
   } else {
     txt = `Kelime Waffle ${tag} — bugün çözemedim`;
@@ -532,18 +523,18 @@ function showEnd(win){
   if(win){
     head.className='rhead win';
     head.textContent='WAFFLE · '+tag+' · ÇÖZÜLDÜ';
-    document.getElementById('endTitle').textContent = (mode==='daily' && swapsLeft>=5) ? 'Harika!' : 'Tebrikler!';
+    document.getElementById('endTitle').textContent = (swapsLeft>=5) ? 'Harika!' : 'Tebrikler!';
   } else {
     head.className='rhead';
     head.textContent='WAFFLE · '+tag+' · HAKLAR BİTTİ';
     document.getElementById('endTitle').textContent='Az kaldı!';
   }
 
-  if(mode==='daily' && win){ st.style.display=''; st.textContent=starStr(clamp(swapsLeft,0,5)); }
+  if(win){ st.style.display=''; st.textContent=starStr(clamp(swapsLeft,0,5)); }
   else { st.style.display='none'; }
 
   document.getElementById('endMsg').textContent = win
-    ? (mode==='daily' ? `${MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS)} hamlede çözdün.` : `${moves} hamlede çözdün.`)
+    ? `${MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS)} hamlede çözdün.`
     : 'Zor bulmacaydı, herkes bazen kaçırır. Sonraki bulmaca tertemiz bir başlangıç!';
 
   const wbox=document.getElementById('endWords'); wbox.innerHTML='';
@@ -568,11 +559,7 @@ function renderActions(){
   cdbarEl.style.display='none';
 
   if(mode==='unlimited'){
-    if(phase==='win'){
-      hintTextEl.textContent=`Çözdün! ${moves} hamle.`;
-    } else {
-      hintTextEl.innerHTML='<b>Sınırsız mod:</b> istediğin kadar oyna. Sıkılırsan yeni bulmacaya geç.';
-    }
+    hintTextEl.textContent = phase==='win' ? 'Çözdün!' : (phase==='lose' ? 'Cevap gösterildi.' : '');
     actionsEl.appendChild(mkBtn('primary','YENİ BULMACA',newUnlimited));
     return;
   }
@@ -582,7 +569,7 @@ function renderActions(){
     hintTextEl.textContent = phase==='win' ? 'Bugünü bitirdin! Yarın yeni bulmaca.' : 'Cevap gösterildi. Yarın yeni bulmaca.';
     cdbarEl.style.display='';
   } else {
-    hintTextEl.innerHTML='İki karoya dokunarak harflerin yerini değiştir. <b>Yeşil</b> doğru yerde, <b>sarı</b> kelimede var ama yanlış yerde.';
+    hintTextEl.textContent='';
   }
 }
 
@@ -617,7 +604,7 @@ function updateModeButtons(){
 function newUnlimited(){
   mode='unlimited'; saveMode(); updateModeButtons();
   document.getElementById('subLbl').textContent='SINIRSIZ · 5×5';
-  phase='play'; selected=null; moves=0;
+  phase='play'; selected=null; swapsLeft=MAX_SWAPS;
   curPuzzle=PUZZLES[Math.floor(Math.random()*PUZZLES.length)];
   solution=buildSolution(curPuzzle);
   unlimSeed=(unlimSeed*1103515245+12345)>>>0;
