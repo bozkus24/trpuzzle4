@@ -6,73 +6,86 @@
 <title>Kelime Waffle — Türkçe (Günlük)</title>
 <style>
   :root{
-    --bg1:#fff6d6;
-    --bg2:#ffe08a;
-    --card:#fffdf5;
+    --page-bg:#ffffff;
+    --card:#ffffff;
+    --card-brd:#ececec;
+    --ink:#2b2b2b;
+    --muted:#7a7a7a;
     --amber:#e6a817;
     --amber-dark:#c98a00;
-    --ink:#4a3b12;
+    --sub:#b98a1c;
+    --logo-sh:#fff3c0;
     --green:#5fa85a;
     --yellow:#e3b93b;
-    --grey:#d9d2bd;
-    --grey-ink:#6b6350;
-    --hint:#2b8cff;
-    --shadow:0 10px 30px rgba(180,130,0,.18);
+    --grey:#dcdcdc;
+    --grey-ink:#5a5a5a;
+    --shadow:0 6px 20px rgba(0,0,0,.08);
+    --overlay:rgba(30,25,0,.42);
+    --chip-bg:#fff4d1;
+    --chip-ink:#9a7208;
+    --rlose:#c0552f;
+    --rwin:#4c9a46;
+    --strip-brd:#eeeeee;
+  }
+  :root.dark{
+    --page-bg:#121213;
+    --card:#1e1f22;
+    --card-brd:#2e2f33;
+    --ink:#eaeaeb;
+    --muted:#9a9aa0;
+    --amber:#e6b53c;
+    --amber-dark:#f0c24a;
+    --sub:#cfa93e;
+    --logo-sh:transparent;
+    --green:#538d4e;
+    --yellow:#b59f3b;
+    --grey:#3a3a3c;
+    --grey-ink:#dcdcdc;
+    --shadow:0 6px 22px rgba(0,0,0,.5);
+    --overlay:rgba(0,0,0,.6);
+    --chip-bg:#33342c;
+    --chip-ink:#e6c766;
+    --rlose:#e0765a;
+    --rwin:#7bbf6f;
+    --strip-brd:#2e2f33;
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%}
   body{
     font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
-    background:radial-gradient(circle at 50% -10%,var(--bg2),var(--bg1) 55%,#fff8e0 100%);
+    background:var(--page-bg);
     color:var(--ink);
     min-height:100%;
     display:flex;flex-direction:column;align-items:center;
     padding:14px 12px 40px;
     user-select:none;
+    transition:background .2s,color .2s;
   }
   header{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;gap:8px}
   .logo{display:flex;flex-direction:column;align-items:center;flex:1}
-  .logo h1{
-    margin:0;font-size:30px;letter-spacing:3px;font-weight:900;
-    color:var(--amber-dark);text-shadow:0 2px 0 #fff3c0;
-  }
-  .logo .sub{font-size:12px;letter-spacing:4px;color:#b98a1c;font-weight:700;margin-top:2px}
-  .iconbtn{
-    width:44px;height:44px;border:none;border-radius:14px;cursor:pointer;
+  .logo h1{margin:0;font-size:30px;letter-spacing:3px;font-weight:900;color:var(--amber-dark);text-shadow:0 2px 0 var(--logo-sh)}
+  .logo .sub{font-size:12px;letter-spacing:4px;color:var(--sub);font-weight:700;margin-top:2px}
+  .hgroup{display:flex;gap:8px}
+  .iconbtn{width:44px;height:44px;border:1px solid var(--card-brd);border-radius:14px;cursor:pointer;
     background:var(--card);box-shadow:var(--shadow);color:var(--amber-dark);
-    font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;
-    transition:transform .1s;
-  }
+    font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;transition:transform .1s}
   .iconbtn:active{transform:scale(.92)}
 
-  .statusbar{
-    width:100%;max-width:440px;margin:16px 0 6px;
-    display:flex;align-items:center;justify-content:space-between;
-    background:var(--card);border-radius:16px;padding:10px 16px;box-shadow:var(--shadow);
-  }
+  .statusbar{width:100%;max-width:440px;margin:16px 0 6px;display:flex;align-items:center;justify-content:space-between;
+    background:var(--card);border:1px solid var(--card-brd);border-radius:16px;padding:10px 16px;box-shadow:var(--shadow)}
   .swaps{display:flex;align-items:baseline;gap:8px}
   .swaps .num{font-size:30px;font-weight:900;color:var(--amber-dark);min-width:36px;text-align:center}
-  .swaps .lbl{font-size:12px;letter-spacing:2px;color:#9a8340;font-weight:700}
+  .swaps .lbl{font-size:12px;letter-spacing:2px;color:var(--muted);font-weight:700}
   .stars{font-size:22px;letter-spacing:2px}
 
-  .modes{display:flex;background:var(--card);border-radius:14px;padding:4px;box-shadow:var(--shadow);margin-top:14px;gap:4px}
-  .modebtn{border:none;background:transparent;cursor:pointer;font-weight:800;letter-spacing:1px;font-size:13px;
-    color:#b08a2c;padding:9px 20px;border-radius:11px;transition:background .15s,color .15s}
+  .modes{display:flex;background:var(--card);border:1px solid var(--card-brd);border-radius:14px;padding:4px;box-shadow:var(--shadow);margin-top:14px;gap:4px}
+  .modebtn{border:none;background:transparent;cursor:pointer;font-weight:800;letter-spacing:1px;font-size:13px;color:var(--muted);padding:9px 20px;border-radius:11px;transition:background .15s,color .15s}
   .modebtn.active{background:linear-gradient(180deg,var(--amber),var(--amber-dark));color:#fff}
 
-  #board{
-    margin:18px 0 6px;
-    display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
-    width:min(92vw,420px);
-  }
-  .tile{
-    position:relative;aspect-ratio:1/1;border-radius:12px;
-    display:flex;align-items:center;justify-content:center;
-    font-size:clamp(22px,7vw,34px);font-weight:900;color:#fff;
-    cursor:pointer;transition:transform .12s, box-shadow .12s, filter .12s;
-    box-shadow:0 4px 0 rgba(0,0,0,.10);
-    text-shadow:0 1px 1px rgba(0,0,0,.18);
-  }
+  #board{margin:18px 0 6px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:min(92vw,420px)}
+  .tile{position:relative;aspect-ratio:1/1;border-radius:12px;display:flex;align-items:center;justify-content:center;
+    font-size:clamp(22px,7vw,34px);font-weight:900;color:#fff;cursor:pointer;transition:transform .12s,box-shadow .12s,filter .12s;
+    box-shadow:0 4px 0 rgba(0,0,0,.10);text-shadow:0 1px 1px rgba(0,0,0,.18)}
   .tile.green{background:var(--green)}
   .tile.yellow{background:var(--yellow)}
   .tile.grey{background:var(--grey);color:var(--grey-ink);text-shadow:none}
@@ -81,61 +94,45 @@
   .tile.pulse{animation:pop .28s ease}
   @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 
-  .hint{max-width:440px;text-align:center;font-size:13px;color:#8a7326;margin:10px 6px 0;line-height:1.5;min-height:20px}
+  .hint{max-width:440px;text-align:center;font-size:13px;color:var(--muted);margin:10px 6px 0;line-height:1.5;min-height:20px}
 
-  /* alt aksiyon alanı */
   #actions{margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;min-height:10px}
-  .btn{
-    border:none;cursor:pointer;font-weight:900;letter-spacing:1px;font-size:15px;
-    padding:13px 22px;border-radius:16px;box-shadow:var(--shadow);transition:transform .1s;
-  }
+  .btn{border:none;cursor:pointer;font-weight:900;letter-spacing:1px;font-size:15px;padding:13px 22px;border-radius:16px;box-shadow:var(--shadow);transition:transform .1s}
   .btn:active{transform:scale(.96)}
   .btn.primary{background:linear-gradient(180deg,var(--amber),var(--amber-dark));color:#fff}
-  .btn.ghost{background:var(--card);color:var(--amber-dark)}
+  .btn.ghost{background:var(--card);color:var(--amber-dark);border:1px solid var(--card-brd)}
 
-  #cdbar{display:none;margin-top:16px;text-align:center;background:var(--card);border-radius:16px;
-    padding:12px 20px;box-shadow:var(--shadow)}
-  #cdbar .lbl{font-size:12px;letter-spacing:2px;color:#9a8340;font-weight:700}
+  #cdbar{display:none;margin-top:16px;text-align:center;background:var(--card);border:1px solid var(--card-brd);border-radius:16px;padding:12px 20px;box-shadow:var(--shadow)}
+  #cdbar .lbl{font-size:12px;letter-spacing:2px;color:var(--muted);font-weight:700}
   #cdbar .t{font-size:26px;font-weight:900;color:var(--amber-dark);font-variant-numeric:tabular-nums}
 
-  /* modal */
-  .overlay{
-    position:fixed;inset:0;background:rgba(60,42,0,.45);backdrop-filter:blur(3px);
-    display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
-  }
+  .overlay{position:fixed;inset:0;background:var(--overlay);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
   .overlay.show{display:flex}
-  .modal{
-    background:var(--card);border-radius:22px;max-width:400px;width:100%;
-    padding:26px 24px;box-shadow:0 20px 60px rgba(120,80,0,.35);text-align:center;
-    animation:rise .25s ease;
-  }
+  .modal{background:var(--card);border:1px solid var(--card-brd);border-radius:22px;max-width:400px;width:100%;padding:26px 24px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;animation:rise .25s ease}
   @keyframes rise{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
   .modal h2{margin:0 0 6px;color:var(--amber-dark);font-size:24px}
-  .modal p{margin:6px 0;color:#6b5a2a;line-height:1.5}
+  .modal p{margin:6px 0;color:var(--muted);line-height:1.5}
   .modal .bigstars{font-size:40px;letter-spacing:4px;margin:8px 0}
   .modal .words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
-  .modal .words span{background:#fff2c4;color:#9a7208;font-weight:800;padding:4px 10px;border-radius:8px;font-size:13px;letter-spacing:1px}
-  .modal ul{text-align:left;margin:10px 0;padding-left:18px;color:#6b5a2a;line-height:1.7;font-size:14px}
-  .modal .legend{display:flex;gap:14px;justify-content:center;margin:12px 0;font-size:13px;color:#6b5a2a}
+  .modal .words span{background:var(--chip-bg);color:var(--chip-ink);font-weight:800;padding:4px 10px;border-radius:8px;font-size:13px;letter-spacing:1px}
+  .modal ul{text-align:left;margin:10px 0;padding-left:18px;color:var(--muted);line-height:1.7;font-size:14px}
+  .modal .legend{display:flex;gap:14px;justify-content:center;margin:12px 0;font-size:13px;color:var(--muted)}
   .modal .legend b{display:inline-block;width:16px;height:16px;border-radius:5px;vertical-align:-3px;margin-right:5px}
   .modal .cd{margin:14px 0 4px}
-  .modal .cd .lbl{font-size:12px;letter-spacing:2px;color:#9a8340;font-weight:700}
+  .modal .cd .lbl{font-size:12px;letter-spacing:2px;color:var(--muted);font-weight:700}
   .modal .cd .t{font-size:32px;font-weight:900;color:var(--amber-dark);font-variant-numeric:tabular-nums}
 
-  /* sonuç ekranı */
   .modal.result{position:relative;max-width:420px;padding:24px 20px 18px}
-  .closeX{position:absolute;top:10px;right:14px;border:none;background:transparent;font-size:26px;line-height:1;
-    color:#b08a2c;cursor:pointer;font-weight:700}
-  .rhead{font-size:11px;letter-spacing:3px;font-weight:800;color:#c0552f;text-transform:uppercase;margin-bottom:8px}
-  .rhead.win{color:#4c9a46}
+  .closeX{position:absolute;top:10px;right:14px;border:none;background:transparent;font-size:26px;line-height:1;color:var(--muted);cursor:pointer;font-weight:700}
+  .rhead{font-size:11px;letter-spacing:3px;font-weight:800;color:var(--rlose);text-transform:uppercase;margin-bottom:8px}
+  .rhead.win{color:var(--rwin)}
   .rtitle{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:30px;color:var(--amber-dark);margin:2px 0 10px}
   .mini{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:196px;margin:0 auto 12px}
-  .mini .mc{aspect-ratio:1/1;border-radius:6px;display:flex;align-items:center;justify-content:center;
-    font-weight:900;font-size:15px;color:#fff;background:var(--green);box-shadow:0 2px 0 rgba(0,0,0,.08)}
+  .mini .mc{aspect-ratio:1/1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;background:var(--green);box-shadow:0 2px 0 rgba(0,0,0,.08)}
   .mini .mc.hole{background:transparent;box-shadow:none}
   .rbtns{display:flex;gap:10px;justify-content:center;margin:8px 0 2px;flex-wrap:wrap}
-  .cdstrip{display:none;align-items:center;justify-content:space-between;border-top:1px solid #efe4bf;margin-top:16px;padding-top:12px}
-  .cdstrip .lbl{font-size:12px;letter-spacing:1px;color:#9a8340;font-weight:700}
+  .cdstrip{display:none;align-items:center;justify-content:space-between;border-top:1px solid var(--strip-brd);margin-top:16px;padding-top:12px}
+  .cdstrip .lbl{font-size:12px;letter-spacing:1px;color:var(--muted);font-weight:700}
   .cdstrip .t{font-size:22px;font-weight:900;color:var(--amber-dark);font-variant-numeric:tabular-nums}
 </style>
 </head>
@@ -146,7 +143,10 @@
       <h1>WAFFLE</h1>
       <div class="sub" id="subLbl">GÜNLÜK · 5×5</div>
     </div>
-    <button class="iconbtn" id="cdBtn" title="Sonraki bulmaca" style="visibility:hidden">⏱</button>
+    <div class="hgroup">
+      <button class="iconbtn" id="cdBtn" title="Sonraki bulmaca" style="visibility:hidden">⏱</button>
+      <button class="iconbtn" id="themeBtn" title="Aydınlık / Karanlık mod">🌙</button>
+    </div>
   </header>
 
   <div class="modes">
@@ -155,7 +155,7 @@
   </div>
 
   <div class="statusbar">
-    <div class="swaps"><span class="num" id="swapNum">15</span><span class="lbl" id="swapLbl">SWAP KALDI</span></div>
+    <div class="swaps"><span class="num" id="swapNum">15</span><span class="lbl" id="swapLbl">HAMLE KALDI</span></div>
     <div class="stars" id="starPrev">★★★★★</div>
   </div>
 
@@ -198,7 +198,7 @@
       <p><b>Günlük bulmaca:</b> Her gün yeni, gece 00:00'da yenilenir. 3 yatay + 3 dikey, toplam <b>6 Türkçe kelime</b> var.</p>
       <ul>
         <li>Bir karoya dokun, sonra başka bir karoya dokun → harfler yer değiştirir.</li>
-        <li><b>15 swap</b> hakkın var. Ne kadar az kullanırsan o kadar çok ⭐.</li>
+        <li><b>15 hamle</b> hakkın var. Ne kadar az kullanırsan o kadar çok ⭐.</li>
         <li>Hakkın biterse cevap gösterilir; yarın yeni bulmaca!</li>
         <li><b>Sınırsız mod:</b> sınır olmadan, istediğin kadar rastgele bulmaca oyna.</li>
       </ul>
@@ -282,6 +282,7 @@ const HOLES = new Set(["1,1","1,3","3,1","3,3"]);
 function isHole(r,c){return HOLES.has(r+","+c);}
 const STORE_KEY = "waffle-daily-v2";
 const MODE_KEY = "waffle-mode-v1";
+const THEME_KEY = "waffle-theme-v1";
 
 const boardEl = document.getElementById('board');
 const swapNumEl = document.getElementById('swapNum');
@@ -296,6 +297,23 @@ let solution, cur, swapsLeft, moves=0, selected=null, curPuzzle;
 let phase='play';   // play | trying | win | gaveup | animating
 let dayIdCur=null;
 let unlimSeed=1;
+
+/* ---------- Tema (aydınlık/karanlık) ---------- */
+function applyTheme(t){
+  document.documentElement.classList.toggle('dark', t==='dark');
+  const btn=document.getElementById('themeBtn');
+  if(btn) btn.textContent = (t==='dark') ? '☀️' : '🌙';
+}
+function toggleTheme(){
+  const nx = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
+  try{ localStorage.setItem(THEME_KEY, nx); }catch(e){}
+  applyTheme(nx);
+}
+(function initTheme(){
+  let t='light';
+  try{ t = localStorage.getItem(THEME_KEY) || 'light'; }catch(e){}
+  applyTheme(t);
+})();
 
 /* ---------- Günlük mantık ---------- */
 function dayId(){
@@ -402,7 +420,7 @@ function render(){
     boardEl.appendChild(t);
   }
   if(mode==='daily'){
-    swapLblEl.textContent='SWAP KALDI';
+    swapLblEl.textContent='HAMLE KALDI';
     swapNumEl.textContent=Math.max(0,swapsLeft);
     starPrevEl.style.visibility='';
     starPrevEl.textContent=starStr(clamp(swapsLeft,0,5));
@@ -505,7 +523,7 @@ function showEnd(win){
   else { st.style.display='none'; }
 
   document.getElementById('endMsg').textContent = win
-    ? (mode==='daily' ? `${MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS)} swap ile çözdün.` : `${moves} hamlede çözdün! 🎯`)
+    ? (mode==='daily' ? `${MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS)} hamlede çözdün.` : `${moves} hamlede çözdün! 🎯`)
     : 'Zor bulmacaydı, herkes bazen kaçırır. Sonraki bulmaca tertemiz bir başlangıç!';
 
   const wbox=document.getElementById('endWords'); wbox.innerHTML='';
@@ -639,6 +657,7 @@ document.getElementById('endTry').addEventListener('click',newUnlimited);
 document.getElementById('endShare').addEventListener('click',shareResult);
 document.getElementById('modeDaily').addEventListener('click',()=>setMode('daily'));
 document.getElementById('modeUnlim').addEventListener('click',()=>setMode('unlimited'));
+document.getElementById('themeBtn').addEventListener('click',toggleTheme);
 document.getElementById('cdBtn').addEventListener('click',()=>{
   if(phase==='win'||phase==='lose'){ updateCountdown(); document.getElementById('endOverlay').classList.add('show'); }
 });
