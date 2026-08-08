@@ -55,6 +55,11 @@
   .swaps .lbl{font-size:12px;letter-spacing:2px;color:#9a8340;font-weight:700}
   .stars{font-size:22px;letter-spacing:2px}
 
+  .modes{display:flex;background:var(--card);border-radius:14px;padding:4px;box-shadow:var(--shadow);margin-top:14px;gap:4px}
+  .modebtn{border:none;background:transparent;cursor:pointer;font-weight:800;letter-spacing:1px;font-size:13px;
+    color:#b08a2c;padding:9px 20px;border-radius:11px;transition:background .15s,color .15s}
+  .modebtn.active{background:linear-gradient(180deg,var(--amber),var(--amber-dark));color:#fff}
+
   #board{
     margin:18px 0 6px;
     display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
@@ -74,9 +79,7 @@
   .tile.hole{background:transparent;box-shadow:none;cursor:default;pointer-events:none}
   .tile.sel{transform:translateY(-4px) scale(1.06);box-shadow:0 8px 0 rgba(0,0,0,.12),0 0 0 4px var(--amber);z-index:2}
   .tile.pulse{animation:pop .28s ease}
-  .tile.hintflash{animation:hintblink .45s ease-in-out 4;z-index:3}
   @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
-  @keyframes hintblink{0%,100%{box-shadow:0 4px 0 rgba(0,0,0,.10)}50%{box-shadow:0 0 0 4px var(--hint),0 0 18px var(--hint);transform:scale(1.05)}}
 
   .hint{max-width:440px;text-align:center;font-size:13px;color:#8a7326;margin:10px 6px 0;line-height:1.5;min-height:20px}
 
@@ -89,7 +92,6 @@
   .btn:active{transform:scale(.96)}
   .btn.primary{background:linear-gradient(180deg,var(--amber),var(--amber-dark));color:#fff}
   .btn.ghost{background:var(--card);color:var(--amber-dark)}
-  .btn.hintbtn{background:linear-gradient(180deg,#4aa3ff,#1f6fd6);color:#fff}
 
   #cdbar{display:none;margin-top:16px;text-align:center;background:var(--card);border-radius:16px;
     padding:12px 20px;box-shadow:var(--shadow)}
@@ -119,6 +121,22 @@
   .modal .cd{margin:14px 0 4px}
   .modal .cd .lbl{font-size:12px;letter-spacing:2px;color:#9a8340;font-weight:700}
   .modal .cd .t{font-size:32px;font-weight:900;color:var(--amber-dark);font-variant-numeric:tabular-nums}
+
+  /* sonuç ekranı */
+  .modal.result{position:relative;max-width:420px;padding:24px 20px 18px}
+  .closeX{position:absolute;top:10px;right:14px;border:none;background:transparent;font-size:26px;line-height:1;
+    color:#b08a2c;cursor:pointer;font-weight:700}
+  .rhead{font-size:11px;letter-spacing:3px;font-weight:800;color:#c0552f;text-transform:uppercase;margin-bottom:8px}
+  .rhead.win{color:#4c9a46}
+  .rtitle{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:30px;color:var(--amber-dark);margin:2px 0 10px}
+  .mini{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:196px;margin:0 auto 12px}
+  .mini .mc{aspect-ratio:1/1;border-radius:6px;display:flex;align-items:center;justify-content:center;
+    font-weight:900;font-size:15px;color:#fff;background:var(--green);box-shadow:0 2px 0 rgba(0,0,0,.08)}
+  .mini .mc.hole{background:transparent;box-shadow:none}
+  .rbtns{display:flex;gap:10px;justify-content:center;margin:8px 0 2px;flex-wrap:wrap}
+  .cdstrip{display:none;align-items:center;justify-content:space-between;border-top:1px solid #efe4bf;margin-top:16px;padding-top:12px}
+  .cdstrip .lbl{font-size:12px;letter-spacing:1px;color:#9a8340;font-weight:700}
+  .cdstrip .t{font-size:22px;font-weight:900;color:var(--amber-dark);font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -131,8 +149,13 @@
     <button class="iconbtn" id="cdBtn" title="Sonraki bulmaca" style="visibility:hidden">⏱</button>
   </header>
 
+  <div class="modes">
+    <button class="modebtn active" id="modeDaily">GÜNLÜK</button>
+    <button class="modebtn" id="modeUnlim">SINIRSIZ</button>
+  </div>
+
   <div class="statusbar">
-    <div class="swaps"><span class="num" id="swapNum">15</span><span class="lbl">SWAP KALDI</span></div>
+    <div class="swaps"><span class="num" id="swapNum">15</span><span class="lbl" id="swapLbl">SWAP KALDI</span></div>
     <div class="stars" id="starPrev">★★★★★</div>
   </div>
 
@@ -147,27 +170,24 @@
     <div class="t" id="cdBarTime">00:00:00</div>
   </div>
 
-  <!-- Haklar bitti -->
-  <div class="overlay" id="outOverlay">
-    <div class="modal">
-      <h2>⏳ Haklarınız bitti!</h2>
-      <p>Ancak denemeye devam edebilirsiniz. İsterseniz <b>ipucu</b> alabilir ya da <b>pes edip</b> cevabı görebilirsiniz.</p>
-      <button class="btn primary" id="outClose" style="margin-top:12px">DEVAM ET</button>
-    </div>
-  </div>
-
-  <!-- Bitiş / Geri sayım -->
+  <!-- Sonuç ekranı -->
   <div class="overlay" id="endOverlay">
-    <div class="modal">
-      <h2 id="endTitle">🎉 Tebrikler!</h2>
-      <div class="bigstars" id="endStars">★★★★★</div>
+    <div class="modal result">
+      <button class="closeX" id="endClose" title="Kapat">×</button>
+      <div class="rhead" id="endHead">WAFFLE · #0 · HAKLAR BİTTİ</div>
+      <h2 class="rtitle" id="endTitle">Az kaldı!</h2>
+      <div class="bigstars" id="endStars" style="display:none"></div>
+      <div class="mini" id="miniGrid"></div>
       <p id="endMsg"></p>
       <div class="words" id="endWords"></div>
-      <div class="cd">
-        <div class="lbl">SONRAKİ BULMACA</div>
-        <div class="t" id="cdTime">00:00:00</div>
+      <div class="rbtns">
+        <button class="btn ghost" id="endTry">♾️ Başka kelime dene</button>
+        <button class="btn ghost" id="endShare">🔗 Paylaş</button>
       </div>
-      <button class="btn ghost" id="endClose" style="margin-top:8px">CEVABI GÖSTER</button>
+      <div class="cdstrip" id="endCd">
+        <span class="lbl">Sonraki bulmaca</span>
+        <span class="t" id="cdTime">00:00:00</span>
+      </div>
     </div>
   </div>
 
@@ -179,7 +199,8 @@
       <ul>
         <li>Bir karoya dokun, sonra başka bir karoya dokun → harfler yer değiştirir.</li>
         <li><b>15 swap</b> hakkın var. Ne kadar az kullanırsan o kadar çok ⭐.</li>
-        <li>Hakkın biterse denemeye devam edebilir, <b>ipucu</b> alabilir ya da <b>pes edebilirsin</b>.</li>
+        <li>Hakkın biterse cevap gösterilir; yarın yeni bulmaca!</li>
+        <li><b>Sınırsız mod:</b> sınır olmadan, istediğin kadar rastgele bulmaca oyna.</li>
       </ul>
       <div class="legend">
         <div><b style="background:var(--green)"></b>Doğru yer</div>
@@ -259,18 +280,22 @@ const PUZZLES = [
 const MAX_SWAPS = 15;
 const HOLES = new Set(["1,1","1,3","3,1","3,3"]);
 function isHole(r,c){return HOLES.has(r+","+c);}
-const STORE_KEY = "waffle-daily-v1";
+const STORE_KEY = "waffle-daily-v2";
+const MODE_KEY = "waffle-mode-v1";
 
 const boardEl = document.getElementById('board');
 const swapNumEl = document.getElementById('swapNum');
+const swapLblEl = document.getElementById('swapLbl');
 const starPrevEl = document.getElementById('starPrev');
 const actionsEl = document.getElementById('actions');
 const hintTextEl = document.getElementById('hintText');
 const cdbarEl = document.getElementById('cdbar');
 
-let solution, cur, swapsLeft, selected=null, curPuzzle;
+let mode='daily';   // daily | unlimited
+let solution, cur, swapsLeft, moves=0, selected=null, curPuzzle;
 let phase='play';   // play | trying | win | gaveup | animating
 let dayIdCur=null;
+let unlimSeed=1;
 
 /* ---------- Günlük mantık ---------- */
 function dayId(){
@@ -376,25 +401,36 @@ function render(){
     t.addEventListener('click',()=>onTile(r,c));
     boardEl.appendChild(t);
   }
-  swapNumEl.textContent=Math.max(0,swapsLeft);
-  starPrevEl.textContent=starStr(clamp(swapsLeft,0,5));
+  if(mode==='daily'){
+    swapLblEl.textContent='SWAP KALDI';
+    swapNumEl.textContent=Math.max(0,swapsLeft);
+    starPrevEl.style.visibility='';
+    starPrevEl.textContent=starStr(clamp(swapsLeft,0,5));
+  } else {
+    swapLblEl.textContent='HAMLE';
+    swapNumEl.textContent=moves;
+    starPrevEl.style.visibility='hidden';
+  }
 }
 
 /* ---------- Etkileşim ---------- */
 function onTile(r,c){
-  if(phase!=='play' && phase!=='trying') return;
+  if(phase!=='play') return;
   if(!selected){selected={r,c};render();return;}
   if(selected.r===r&&selected.c===c){selected=null;render();return;}
   const a=selected;
   const changed = cur[a.r][a.c]!==cur[r][c];
   [cur[a.r][a.c],cur[r][c]]=[cur[r][c],cur[a.r][a.c]];
   selected=null;
-  if(changed && phase==='play' && swapsLeft>0) swapsLeft--;
+  if(changed){
+    if(mode==='daily'){ if(phase==='play' && swapsLeft>0) swapsLeft--; }
+    else { moves++; }
+  }
   render();
   if(changed){pulse(a.r,a.c);pulse(r,c);}
   save();
   if(isSolved()){finishWin();return;}
-  if(phase==='play' && swapsLeft<=0){ triggerOut(); }
+  if(mode==='daily' && phase==='play' && swapsLeft<=0){ revealAndLose(); }
 }
 function pulse(r,c){
   const el=boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
@@ -406,98 +442,109 @@ function isSolved(){
   return true;
 }
 
-/* ---------- Hak bitti akışı ---------- */
-function triggerOut(){
-  phase='trying'; selected=null; save(); render();
-  document.getElementById('outOverlay').classList.add('show');
-}
-function closeOut(){
-  document.getElementById('outOverlay').classList.remove('show');
-  renderActions();
-}
-
-/* İpucu: mantıklı bir swap'ın iki karosunu yanıp söndür */
-function sensibleSwap(){
-  const pos=activePositions();
-  // 1) iki tarafı da doğru yapan takas
-  for(let i=0;i<pos.length;i++){
-    const [ri,ci]=pos[i]; if(cur[ri][ci]===solution[ri][ci]) continue;
-    for(let j=i+1;j<pos.length;j++){
-      const [rj,cj]=pos[j]; if(cur[rj][cj]===solution[rj][cj]) continue;
-      if(cur[ri][ci]===solution[rj][cj] && cur[rj][cj]===solution[ri][ci]) return [pos[i],pos[j]];
-    }
-  }
-  // 2) en az bir tarafı doğru yapan takas
-  for(let i=0;i<pos.length;i++){
-    const [ri,ci]=pos[i]; if(cur[ri][ci]===solution[ri][ci]) continue;
-    for(let j=0;j<pos.length;j++){
-      if(j===i) continue;
-      const [rj,cj]=pos[j];
-      if(cur[rj][cj]===solution[ri][ci]) return [pos[i],pos[j]];
-    }
-  }
-  return null;
-}
-function hintFlash(){
-  const sw=sensibleSwap();
-  if(!sw){return;}
-  sw.forEach(([r,c])=>{
-    const el=boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
-    if(el){el.classList.remove('hintflash'); void el.offsetWidth; el.classList.add('hintflash');
-      setTimeout(()=>el.classList.remove('hintflash'),2000);}
-  });
-}
-
-/* Pes et: harfleri animasyonla doğru yerine getir */
-function giveUp(){
-  phase='animating'; selected=null; renderActions();
+/* ---------- Hak bitince: cevabı animasyonla aç ---------- */
+function revealAndLose(){
+  phase='animating'; selected=null; render(); renderActions();
   const wrong=activePositions().filter(([r,c])=>cur[r][c]!==solution[r][c]);
-  if(wrong.length===0){ finishGaveUp(); return; }
+  if(wrong.length===0){ finishLose(); return; }
   wrong.forEach(([r,c],k)=>{
     setTimeout(()=>{ cur[r][c]=solution[r][c]; render(); pulse(r,c); }, k*80);
   });
-  setTimeout(finishGaveUp, wrong.length*80 + 450);
+  setTimeout(finishLose, wrong.length*80 + 450);
 }
 
 /* ---------- Bitiş ---------- */
 function finishWin(){ phase='win'; selected=null; save(); showEnd(true); }
-function finishGaveUp(){ phase='gaveup'; selected=null; save(); showEnd(false); }
+function finishLose(){ phase='lose'; selected=null; save(); showEnd(false); }
+
+function buildMini(){
+  const m=document.getElementById('miniGrid'); m.innerHTML='';
+  for(let r=0;r<5;r++)for(let c=0;c<5;c++){
+    const d=document.createElement('div');
+    if(isHole(r,c)){ d.className='mc hole'; }
+    else { d.className='mc'; d.textContent=solution[r][c]; }
+    m.appendChild(d);
+  }
+}
+function shareResult(){
+  const tag = mode==='daily' ? '#'+dayIdCur : 'Sınırsız';
+  let txt;
+  if(phase==='win'){
+    const s = mode==='daily' ? '⭐'.repeat(clamp(swapsLeft,0,5)) : (moves+' hamle');
+    txt = `Kelime Waffle ${tag} ✅ ${s}`;
+  } else {
+    txt = `Kelime Waffle ${tag} 😅 bugün çözemedim!`;
+  }
+  txt += '\n' + location.href;
+  const b=document.getElementById('endShare');
+  if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
+  try{
+    navigator.clipboard.writeText(txt);
+    const o=b.textContent; b.textContent='✓ Kopyalandı'; setTimeout(()=>b.textContent=o,1500);
+  }catch(e){}
+}
 
 function showEnd(win){
-  render(); renderActions();
-  const ov=document.getElementById('endOverlay');
-  const stars=win?clamp(swapsLeft,0,5):0;
-  document.getElementById('endTitle').textContent = win?'🎉 Tebrikler!':'🏳️ Pes ettin';
+  render(); renderActions(); buildMini();
+  const head=document.getElementById('endHead');
   const st=document.getElementById('endStars');
-  if(win){ st.style.display=''; st.textContent=starStr(stars); }
+  const endCd=document.getElementById('endCd');
+  const tag = mode==='daily' ? '#'+dayIdCur : 'SINIRSIZ';
+
+  if(win){
+    head.className='rhead win';
+    head.textContent='WAFFLE · '+tag+' · ÇÖZÜLDÜ';
+    document.getElementById('endTitle').textContent = (mode==='daily' && swapsLeft>=5) ? 'Harika!' : 'Tebrikler!';
+  } else {
+    head.className='rhead';
+    head.textContent='WAFFLE · '+tag+' · HAKLAR BİTTİ';
+    document.getElementById('endTitle').textContent='Az kaldı!';
+  }
+
+  if(mode==='daily' && win){ st.style.display=''; st.textContent=starStr(clamp(swapsLeft,0,5)); }
   else { st.style.display='none'; }
+
   document.getElementById('endMsg').textContent = win
-    ? (stars===5?'Mükemmel! Bugünü tam puanla bitirdin.':`Bugünü ${MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS)} swap ile bitirdin.`)
-    : 'Doğru cevap gösterildi. Yarın yeni bulmaca!';
+    ? (mode==='daily' ? `${MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS)} swap ile çözdün.` : `${moves} hamlede çözdün! 🎯`)
+    : 'Zor bulmacaydı, herkes bazen kaçırır. Sonraki bulmaca tertemiz bir başlangıç!';
+
   const wbox=document.getElementById('endWords'); wbox.innerHTML='';
   [...curPuzzle.across,...curPuzzle.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);});
-  ov.classList.add('show');
-  document.getElementById('cdBtn').style.visibility='visible';
-  updateCountdown();
+
+  if(mode==='daily'){
+    endCd.style.display='flex';
+    document.getElementById('cdBtn').style.visibility='visible';
+    updateCountdown();
+  } else {
+    endCd.style.display='none';
+    document.getElementById('cdBtn').style.visibility='hidden';
+  }
+  document.getElementById('endOverlay').classList.add('show');
 }
 
 /* ---------- Alt aksiyon alanı ---------- */
+function mkBtn(cls,txt,fn){const b=document.createElement('button');b.className='btn '+cls;b.textContent=txt;b.onclick=fn;return b;}
+
 function renderActions(){
   actionsEl.innerHTML='';
-  if(phase==='trying'){
-    hintTextEl.textContent='Hakların bitti — istersen ipucu al ya da pes et.';
-    cdbarEl.style.display='none';
-    const h=document.createElement('button'); h.className='btn hintbtn'; h.textContent='💡 İPUCU';
-    h.onclick=hintFlash;
-    const g=document.createElement('button'); g.className='btn ghost'; g.textContent='🏳️ PES ET';
-    g.onclick=giveUp;
-    actionsEl.appendChild(h); actionsEl.appendChild(g);
-  } else if(phase==='win' || phase==='gaveup'){
+  cdbarEl.style.display='none';
+
+  if(mode==='unlimited'){
+    if(phase==='win'){
+      hintTextEl.textContent=`Çözdün! ${moves} hamle 🎉`;
+    } else {
+      hintTextEl.innerHTML='<b>Sınırsız mod:</b> istediğin kadar oyna. Sıkılırsan yeni bulmacaya geç.';
+    }
+    actionsEl.appendChild(mkBtn('primary','🔀 YENİ BULMACA',newUnlimited));
+    return;
+  }
+
+  // GÜNLÜK
+  if(phase==='win' || phase==='lose'){
     hintTextEl.textContent = phase==='win' ? 'Bugünü bitirdin! Yarın yeni bulmaca 👇' : 'Cevap gösterildi. Yarın yeni bulmaca 👇';
     cdbarEl.style.display='';
   } else {
     hintTextEl.innerHTML='İki karoya dokunarak harflerin yerini değiştir. <b>Yeşil</b> doğru yerde, <b>sarı</b> kelimede var ama yanlış yerde.';
-    cdbarEl.style.display='none';
   }
 }
 
@@ -510,6 +557,7 @@ function updateCountdown(){
 
 /* ---------- Kayıt ---------- */
 function save(){
+  if(mode!=='daily') return;   // sınırsız mod kaydedilmez
   try{
     const pos=activePositions();
     const data={ dayId:dayIdCur, letters:pos.map(([r,c])=>cur[r][c]), swapsLeft, phase };
@@ -519,9 +567,38 @@ function save(){
 function load(){
   try{ return JSON.parse(localStorage.getItem(STORE_KEY)); }catch(e){ return null; }
 }
+function saveMode(){ try{ localStorage.setItem(MODE_KEY, mode); }catch(e){} }
+function loadMode(){ try{ return localStorage.getItem(MODE_KEY); }catch(e){ return null; } }
 
 /* ---------- Günlük yükleme ---------- */
+function updateModeButtons(){
+  document.getElementById('modeDaily').classList.toggle('active', mode==='daily');
+  document.getElementById('modeUnlim').classList.toggle('active', mode==='unlimited');
+}
+
+function newUnlimited(){
+  mode='unlimited'; saveMode(); updateModeButtons();
+  document.getElementById('subLbl').textContent='SINIRSIZ · 5×5';
+  phase='play'; selected=null; moves=0;
+  curPuzzle=PUZZLES[Math.floor(Math.random()*PUZZLES.length)];
+  solution=buildSolution(curPuzzle);
+  unlimSeed=(unlimSeed*1103515245+12345)>>>0;
+  unlimSeed^=(Date.now()&0xffff)+Math.floor(performance.now());
+  cur=makeScrambleSeeded(solution, mulberry32(unlimSeed>>>0));
+  document.getElementById('endOverlay').classList.remove('show');
+  document.getElementById('cdBtn').style.visibility='hidden';
+  render(); renderActions();
+}
+
+function setMode(m){
+  if(m===mode && (m==='daily')) { /* günlüğe basınca da tazele */ }
+  mode=m; saveMode(); updateModeButtons();
+  document.getElementById('endOverlay').classList.remove('show');
+  if(m==='daily') loadDaily(); else newUnlimited();
+}
+
 function loadDaily(){
+  mode='daily'; updateModeButtons();
   dayIdCur=dayId();
   const idx = ((dayIdCur % PUZZLES.length)+PUZZLES.length)%PUZZLES.length;
   curPuzzle=PUZZLES[idx];
@@ -532,7 +609,7 @@ function loadDaily(){
   if(saved && saved.dayId===dayIdCur && Array.isArray(saved.letters) && saved.letters.length===21){
     cur=toGrid(activePositions(), saved.letters);
     swapsLeft=(typeof saved.swapsLeft==='number')?saved.swapsLeft:MAX_SWAPS;
-    phase=saved.phase||'play';
+    phase=(saved.phase==='win'||saved.phase==='lose')?saved.phase:'play';
   } else {
     cur=makeScrambleSeeded(solution, mulberry32((dayIdCur*2654435761)>>>0));
     swapsLeft=MAX_SWAPS; phase='play';
@@ -540,35 +617,40 @@ function loadDaily(){
   }
 
   selected=null;
-  document.getElementById('outOverlay').classList.remove('show');
   document.getElementById('endOverlay').classList.remove('show');
   render(); renderActions();
 
-  if(phase==='win' || phase==='gaveup'){ showEnd(phase==='win'); }
+  if(phase==='win' || phase==='lose'){ showEnd(phase==='win'); }
   else { document.getElementById('cdBtn').style.visibility='hidden'; }
 }
 
 /* ---------- Saat / gün değişimi ---------- */
 setInterval(()=>{
+  if(mode!=='daily') return;
   if(dayId()!==dayIdCur){ loadDaily(); return; }
-  if(phase==='win' || phase==='gaveup') updateCountdown();
+  if(phase==='win' || phase==='lose') updateCountdown();
 }, 1000);
 
 /* ---------- Olaylar ---------- */
-document.getElementById('outClose').addEventListener('click',closeOut);
 document.getElementById('endClose').addEventListener('click',()=>{
   document.getElementById('endOverlay').classList.remove('show');
 });
+document.getElementById('endTry').addEventListener('click',newUnlimited);
+document.getElementById('endShare').addEventListener('click',shareResult);
+document.getElementById('modeDaily').addEventListener('click',()=>setMode('daily'));
+document.getElementById('modeUnlim').addEventListener('click',()=>setMode('unlimited'));
 document.getElementById('cdBtn').addEventListener('click',()=>{
-  if(phase==='win'||phase==='gaveup'){ updateCountdown(); document.getElementById('endOverlay').classList.add('show'); }
+  if(phase==='win'||phase==='lose'){ updateCountdown(); document.getElementById('endOverlay').classList.add('show'); }
 });
 document.getElementById('helpBtn').addEventListener('click',()=>document.getElementById('helpOverlay').classList.add('show'));
 document.getElementById('helpClose').addEventListener('click',()=>document.getElementById('helpOverlay').classList.remove('show'));
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
-  if(e.target===o && o.id!=='outOverlay') o.classList.remove('show');
+  if(e.target===o) o.classList.remove('show');
 }));
 
-loadDaily();
+mode = (loadMode()==='unlimited') ? 'unlimited' : 'daily';
+updateModeButtons();
+if(mode==='unlimited') newUnlimited(); else loadDaily();
 </script>
 </body>
 </html>
