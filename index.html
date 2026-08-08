@@ -59,11 +59,17 @@
     color:var(--ink);
     min-height:100%;
     display:flex;flex-direction:column;align-items:center;
-    padding:14px 12px 40px;
+    padding:0;
     user-select:none;
     transition:background .2s,color .2s;
   }
-  header{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .topbar{width:100%;background:var(--card);border-bottom:1px solid var(--card-brd);box-shadow:0 2px 12px rgba(0,0,0,.06);position:sticky;top:0;z-index:40;display:flex;justify-content:center;padding:8px 12px}
+  .topbar-inner{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .topbar .iconbtn{background:transparent;box-shadow:none;border:1px solid transparent;width:40px;height:40px}
+  .topbar .iconbtn:active{background:var(--card-brd)}
+  .topbar .logo h1{font-size:22px;letter-spacing:2px}
+  .topbar .logo .sub{font-size:10px;letter-spacing:3px}
+  .content{width:100%;display:flex;flex-direction:column;align-items:center;padding:12px 12px 40px}
   .logo{display:flex;flex-direction:column;align-items:center;flex:1}
   .logo h1{margin:0;font-size:30px;letter-spacing:3px;font-weight:900;color:var(--amber-dark);text-shadow:0 2px 0 var(--logo-sh)}
   .logo .sub{font-size:12px;letter-spacing:4px;color:var(--sub);font-weight:700;margin-top:2px}
@@ -86,7 +92,7 @@
 
   #board{margin:18px 0 6px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px;width:min(92vw,420px)}
   .tile{position:relative;aspect-ratio:1/1;border-radius:12px;display:flex;align-items:center;justify-content:center;
-    font-size:clamp(22px,7vw,34px);font-weight:900;color:#fff;cursor:pointer;transition:transform .12s,box-shadow .12s,filter .12s;
+    font-size:clamp(22px,7vw,34px);font-weight:700;color:#fff;cursor:pointer;transition:transform .12s,box-shadow .12s,filter .12s;
     box-shadow:0 4px 0 rgba(0,0,0,.10);text-shadow:0 1px 1px rgba(0,0,0,.18)}
   .tile.green{background:var(--green)}
   .tile.yellow{background:var(--yellow)}
@@ -130,7 +136,7 @@
   .rhead.win{color:var(--rwin)}
   .rtitle{font-family:'Archivo','Segoe UI',sans-serif;font-style:italic;font-size:30px;color:var(--amber-dark);margin:2px 0 10px}
   .mini{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:196px;margin:0 auto 12px}
-  .mini .mc{aspect-ratio:1/1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;color:#fff;background:var(--green);box-shadow:0 2px 0 rgba(0,0,0,.08)}
+  .mini .mc{aspect-ratio:1/1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;background:var(--green);box-shadow:0 2px 0 rgba(0,0,0,.08)}
   .mini .mc.hole{background:transparent;box-shadow:none}
   .rbtns{display:flex;gap:10px;justify-content:center;margin:8px 0 2px;flex-wrap:wrap}
   .cdstrip{display:none;align-items:center;justify-content:space-between;border-top:1px solid var(--strip-brd);margin-top:16px;padding-top:12px}
@@ -139,7 +145,8 @@
 </style>
 </head>
 <body>
-  <header>
+  <header class="topbar">
+   <div class="topbar-inner">
     <button class="iconbtn" id="helpBtn" title="Nasıl oynanır">?</button>
     <div class="logo">
       <h1>WAFFLE</h1>
@@ -149,7 +156,10 @@
       <button class="iconbtn" id="cdBtn" title="Sonraki bulmaca" style="visibility:hidden"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></button>
       <button class="iconbtn" id="themeBtn" title="Aydınlık / Karanlık mod"></button>
     </div>
+   </div>
   </header>
+
+  <main class="content">
 
   <div class="modes">
     <button class="modebtn active" id="modeDaily">GÜNLÜK</button>
@@ -171,6 +181,8 @@
     <div class="lbl">SONRAKİ BULMACAYA</div>
     <div class="t" id="cdBarTime">00:00:00</div>
   </div>
+
+  </main>
 
   <!-- Sonuç ekranı -->
   <div class="overlay" id="endOverlay">
