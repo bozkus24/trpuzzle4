@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kelime Waffle — Türkçe</title>
+<style>
+  :root{
+    --bg1:#fff6d6;
+    --bg2:#ffe08a;
+    --card:#fffdf5;
+    --amber:#e6a817;
+    --amber-dark:#c98a00;
+    --ink:#4a3b12;
+    --green:#5fa85a;
+    --yellow:#e3b93b;
+    --grey:#d9d2bd;
+    --grey-ink:#6b6350;
+    --shadow:0 10px 30px rgba(180,130,0,.18);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:"Trebuchet MS","Segoe UI",system-ui,sans-serif;
+    background:radial-gradient(circle at 50% -10%,var(--bg2),var(--bg1) 55%,#fff8e0 100%);
+    color:var(--ink);
+    min-height:100%;
+    display:flex;flex-direction:column;align-items:center;
+    padding:14px 12px 40px;
+    user-select:none;
+  }
+  header{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .logo{display:flex;flex-direction:column;align-items:center;flex:1}
+  .logo h1{
+    margin:0;font-size:30px;letter-spacing:3px;font-weight:900;
+    color:var(--amber-dark);text-shadow:0 2px 0 #fff3c0;
+  }
+  .logo .sub{font-size:12px;letter-spacing:4px;color:#b98a1c;font-weight:700;margin-top:2px}
+  .iconbtn{
+    width:44px;height:44px;border:none;border-radius:14px;cursor:pointer;
+    background:var(--card);box-shadow:var(--shadow);color:var(--amber-dark);
+    font-size:20px;font-weight:900;display:flex;align-items:center;justify-content:center;
+    transition:transform .1s;
+  }
+  .iconbtn:active{transform:scale(.92)}
+
+  .statusbar{
+    width:100%;max-width:440px;margin:16px 0 6px;
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--card);border-radius:16px;padding:10px 16px;box-shadow:var(--shadow);
+  }
+  .swaps{display:flex;align-items:baseline;gap:8px}
+  .swaps .num{font-size:30px;font-weight:900;color:var(--amber-dark);min-width:36px;text-align:center}
+  .swaps .lbl{font-size:12px;letter-spacing:2px;color:#9a8340;font-weight:700}
+  .stars{font-size:22px;letter-spacing:2px}
+
+  #board{
+    margin:18px 0 6px;
+    display:grid;grid-template-columns:repeat(5,1fr);gap:8px;
+    width:min(92vw,420px);
+  }
+  .tile{
+    position:relative;aspect-ratio:1/1;border-radius:12px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:clamp(22px,7vw,34px);font-weight:900;color:#fff;
+    cursor:pointer;transition:transform .12s, box-shadow .12s, filter .12s;
+    box-shadow:0 4px 0 rgba(0,0,0,.10);
+    text-shadow:0 1px 1px rgba(0,0,0,.18);
+  }
+  .tile.green{background:var(--green)}
+  .tile.yellow{background:var(--yellow)}
+  .tile.grey{background:var(--grey);color:var(--grey-ink);text-shadow:none}
+  .tile.hole{background:transparent;box-shadow:none;cursor:default;pointer-events:none}
+  .tile.sel{transform:translateY(-4px) scale(1.06);box-shadow:0 8px 0 rgba(0,0,0,.12),0 0 0 4px var(--amber);z-index:2}
+  .tile.pulse{animation:pop .28s ease}
+  @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+  .hint{max-width:440px;text-align:center;font-size:13px;color:#8a7326;margin:10px 6px 0;line-height:1.5}
+
+  .newbtn{
+    margin-top:18px;border:none;cursor:pointer;
+    background:linear-gradient(180deg,var(--amber),var(--amber-dark));
+    color:#fff;font-weight:900;letter-spacing:1px;font-size:16px;
+    padding:14px 26px;border-radius:16px;box-shadow:var(--shadow);
+    transition:transform .1s;
+  }
+  .newbtn:active{transform:scale(.96)}
+
+  /* modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(60,42,0,.45);backdrop-filter:blur(3px);
+    display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  .overlay.show{display:flex}
+  .modal{
+    background:var(--card);border-radius:22px;max-width:400px;width:100%;
+    padding:26px 24px;box-shadow:0 20px 60px rgba(120,80,0,.35);text-align:center;
+    animation:rise .25s ease;
+  }
+  @keyframes rise{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
+  .modal h2{margin:0 0 6px;color:var(--amber-dark);font-size:26px}
+  .modal p{margin:6px 0;color:#6b5a2a;line-height:1.5}
+  .modal .bigstars{font-size:40px;letter-spacing:4px;margin:10px 0}
+  .modal .words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
+  .modal .words span{background:#fff2c4;color:#9a7208;font-weight:800;padding:4px 10px;border-radius:8px;font-size:13px;letter-spacing:1px}
+  .modal ul{text-align:left;margin:10px 0;padding-left:18px;color:#6b5a2a;line-height:1.7;font-size:14px}
+  .modal .legend{display:flex;gap:14px;justify-content:center;margin:12px 0;font-size:13px;color:#6b5a2a}
+  .modal .legend b{display:inline-block;width:16px;height:16px;border-radius:5px;vertical-align:-3px;margin-right:5px}
+</style>
+</head>
+<body>
+  <header>
+    <button class="iconbtn" id="helpBtn" title="Nasıl oynanır">?</button>
+    <div class="logo">
+      <h1>WAFFLE</h1>
+      <div class="sub">TÜRKÇE · 5×5</div>
+    </div>
+    <button class="iconbtn" id="newBtnTop" title="Yeni bulmaca">↻</button>
+  </header>
+
+  <div class="statusbar">
+    <div class="swaps"><span class="num" id="swapNum">15</span><span class="lbl">SWAP KALDI</span></div>
+    <div class="stars" id="starPrev">★★★★★</div>
+  </div>
+
+  <div id="board"></div>
+
+  <p class="hint">İki karoya dokunarak harflerin yerini değiştir. Amaç: tüm satır ve sütunları geçerli kelime yapmak. <b>Yeşil</b> doğru yerde, <b>sarı</b> kelimede var ama yanlış yerde.</p>
+
+  <button class="newbtn" id="newBtn">YENİ BULMACA</button>
+
+  <!-- Kazanma / Kaybetme -->
+  <div class="overlay" id="endOverlay">
+    <div class="modal">
+      <h2 id="endTitle">🎉 Tebrikler!</h2>
+      <div class="bigstars" id="endStars">★★★★★</div>
+      <p id="endMsg"></p>
+      <div class="words" id="endWords"></div>
+      <button class="newbtn" id="endNew">YENİ BULMACA</button>
+    </div>
+  </div>
+
+  <!-- Yardım -->
+  <div class="overlay" id="helpOverlay">
+    <div class="modal">
+      <h2>Nasıl Oynanır?</h2>
+      <p>3 yatay + 3 dikey, toplam <b>6 Türkçe kelime</b> var. Harfler karışık başlar.</p>
+      <ul>
+        <li>Bir karoya dokun, sonra başka bir karoya dokun → harfler yer değiştirir.</li>
+        <li>Hedef: tüm kelimeleri doğru dizmek.</li>
+        <li><b>15 swap</b> hakkın var. Ne kadar az kullanırsan o kadar çok ⭐.</li>
+      </ul>
+      <div class="legend">
+        <div><b style="background:var(--green)"></b>Doğru yer</div>
+        <div><b style="background:var(--yellow)"></b>Yanlış yer</div>
+        <div><b style="background:var(--grey)"></b>Bu kelimede yok</div>
+      </div>
+      <button class="newbtn" id="helpClose">ANLADIM</button>
+    </div>
+  </div>
+
+<script>
+const PUZZLES = [
+  {across:["KALEM","BAKAN","PLAKA"],down:["KEBAP","LOKMA","MANDA"]},
+  {across:["KİTAP","FORUM","SOKAK"],down:["KAFES","TARAK","PAMUK"]},
+  {across:["KAPAK","BURUN","PLAKA"],down:["KEBAP","PARÇA","KANCA"]},
+  {across:["KAVAK","BURUN","POSTA"],down:["KEBAP","VİRÜS","KANCA"]},
+  {across:["KAYAK","FORUM","SORUN"],down:["KAFES","YARAR","KEMAN"]},
+  {across:["KAZAK","FORUM","SORUN"],down:["KAFES","ZARAR","KEMAN"]},
+  {across:["KABAK","FORUM","SOKAK"],down:["KAFES","BÖREK","KEMİK"]},
+  {across:["KANAT","BEKAR","PLAKA"],down:["KEBAP","NOKTA","TARLA"]},
+  {across:["KANAL","SOKAK","PLAKA"],down:["KASAP","NOKTA","LOKMA"]},
+  {across:["KASAP","FORUM","SİNEK"],down:["KAFES","SERİN","PAMUK"]},
+  {across:["KAZAN","BÖREK","PLAKA"],down:["KEBAP","ZORBA","NOKTA"]},
+  {across:["KEBAP","FORUM","SOKAK"],down:["KAFES","BÖREK","PAMUK"]},
+];
+
+const MAX_SWAPS = 15;
+// aktif hücreler (delikler: (1,1),(1,3),(3,1),(3,3))
+const HOLES = new Set(["1,1","1,3","3,1","3,3"]);
+function isHole(r,c){return HOLES.has(r+","+c);}
+
+// Türkçe harf dizisi (upper), veri zaten upper
+const boardEl = document.getElementById('board');
+const swapNumEl = document.getElementById('swapNum');
+const starPrevEl = document.getElementById('starPrev');
+
+let solution;      // 5x5 çözüm (null=delik)
+let cur;           // 5x5 mevcut durum
+let swapsLeft;
+let selected=null; // {r,c}
+let finished=false;
+let curPuzzle;
+
+function buildSolution(p){
+  const g=Array.from({length:5},()=>Array(5).fill(null));
+  const rows=[0,2,4], cols=[0,2,4];
+  rows.forEach((r,i)=>{const w=p.across[i]; for(let c=0;c<5;c++) g[r][c]=w[c];});
+  cols.forEach((c,i)=>{const w=p.down[i]; for(let r=0;r<5;r++) g[r][c]=w[r];});
+  return g;
+}
+
+function activePositions(){
+  const out=[];
+  for(let r=0;r<5;r++)for(let c=0;c<5;c++) if(!isHole(r,c)) out.push([r,c]);
+  return out;
+}
+
+function makeScramble(sol){
+  const pos=activePositions();
+  const letters=pos.map(([r,c])=>sol[r][c]);
+  let cur=letters.slice();
+  const R=13; // en fazla 13 swap ile çözülebilir garantisi (<15)
+  let done=0, guard=0;
+  while(done<R && guard<400){
+    guard++;
+    const i=Math.floor(Math.random()*cur.length);
+    const j=Math.floor(Math.random()*cur.length);
+    if(i===j||cur[i]===cur[j]) continue;
+    [cur[i],cur[j]]=[cur[j],cur[i]];
+    done++;
+  }
+  // çözülmüş kalmadığından emin ol
+  if(cur.every((l,k)=>l===letters[k])){
+    // bir geçerli takas yap
+    for(let i=0;i<cur.length;i++)for(let j=i+1;j<cur.length;j++){
+      if(cur[i]!==cur[j]){[cur[i],cur[j]]=[cur[j],cur[i]];return toGrid(pos,cur);}
+    }
+  }
+  return toGrid(pos,cur);
+}
+function toGrid(pos,letters){
+  const g=Array.from({length:5},()=>Array(5).fill(null));
+  pos.forEach(([r,c],k)=>g[r][c]=letters[k]);
+  return g;
+}
+
+// Wordle tarzı tek kelime renklendirme -> rank dizisi (2 yeşil,1 sarı,0 gri)
+function colorWord(curr,sol){
+  const n=curr.length, res=Array(n).fill(0);
+  const pool={};
+  for(let i=0;i<n;i++){
+    if(curr[i]===sol[i]) res[i]=2;
+    else pool[sol[i]]=(pool[sol[i]]||0)+1;
+  }
+  for(let i=0;i<n;i++){
+    if(res[i]===2) continue;
+    if(pool[curr[i]]>0){res[i]=1;pool[curr[i]]--;}
+  }
+  return res;
+}
+
+function computeColors(){
+  const rank=Array.from({length:5},()=>Array(5).fill(-1));
+  const rows=[0,2,4], cols=[0,2,4];
+  // yatay kelimeler
+  rows.forEach(r=>{
+    const cc=[0,1,2,3,4].map(c=>cur[r][c]);
+    const ss=[0,1,2,3,4].map(c=>solution[r][c]);
+    const col=colorWord(cc,ss);
+    for(let c=0;c<5;c++) rank[r][c]=Math.max(rank[r][c],col[c]);
+  });
+  // dikey kelimeler
+  cols.forEach(c=>{
+    const cc=[0,1,2,3,4].map(r=>cur[r][c]);
+    const ss=[0,1,2,3,4].map(r=>solution[r][c]);
+    const col=colorWord(cc,ss);
+    for(let r=0;r<5;r++) rank[r][c]=Math.max(rank[r][c],col[r]);
+  });
+  return rank;
+}
+
+function render(){
+  const rank=computeColors();
+  boardEl.innerHTML='';
+  for(let r=0;r<5;r++)for(let c=0;c<5;c++){
+    const t=document.createElement('div');
+    if(isHole(r,c)){t.className='tile hole';boardEl.appendChild(t);continue;}
+    const rk=rank[r][c];
+    t.className='tile '+(rk===2?'green':rk===1?'yellow':'grey');
+    if(selected&&selected.r===r&&selected.c===c) t.classList.add('sel');
+    t.textContent=cur[r][c];
+    t.dataset.r=r;t.dataset.c=c;
+    t.addEventListener('click',()=>onTile(r,c));
+    boardEl.appendChild(t);
+  }
+  swapNumEl.textContent=swapsLeft;
+  starPrevEl.textContent=starStr(clamp(swapsLeft,0,5));
+}
+
+function starStr(n){return '★'.repeat(n)+'☆'.repeat(5-n);}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
+
+function onTile(r,c){
+  if(finished) return;
+  if(!selected){selected={r,c};render();return;}
+  if(selected.r===r&&selected.c===c){selected=null;render();return;}
+  // takas
+  const a=selected;
+  [cur[a.r][a.c],cur[r][c]]=[cur[r][c],cur[a.r][a.c]];
+  selected=null;
+  if(cur[a.r][a.c]!==cur[r][c]) swapsLeft--; // aynı harfse hak yakmasın
+  render();
+  // animasyon
+  pulse(a.r,a.c);pulse(r,c);
+  checkEnd();
+}
+
+function pulse(r,c){
+  const el=boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+  if(el){el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),300);}
+}
+
+function isSolved(){
+  for(let r=0;r<5;r++)for(let c=0;c<5;c++)
+    if(!isHole(r,c)&&cur[r][c]!==solution[r][c]) return false;
+  return true;
+}
+
+function checkEnd(){
+  if(isSolved()){finish(true);return;}
+  if(swapsLeft<=0){finish(false);return;}
+}
+
+function finish(win){
+  finished=true;
+  const ov=document.getElementById('endOverlay');
+  const stars=win?clamp(swapsLeft,0,5):0;
+  document.getElementById('endTitle').textContent = win?'🎉 Harika!':'😅 Swap bitti';
+  document.getElementById('endStars').textContent = starStr(stars);
+  document.getElementById('endMsg').textContent = win
+    ? (stars===5?'Mükemmel! Tam puan.':`${MAX_SWAPS-swapsLeft} swap ile çözdün.`)
+    : 'Doğru cevaplar aşağıda 👇';
+  // kaybettiyse çözümü göster
+  if(!win){cur=solution.map(row=>row.slice());render();}
+  const wbox=document.getElementById('endWords');
+  wbox.innerHTML='';
+  [...curPuzzle.across,...curPuzzle.down].forEach(w=>{
+    const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);
+  });
+  ov.classList.add('show');
+}
+
+function newGame(){
+  finished=false;selected=null;swapsLeft=MAX_SWAPS;
+  curPuzzle=PUZZLES[Math.floor(Math.random()*PUZZLES.length)];
+  solution=buildSolution(curPuzzle);
+  cur=makeScramble(solution);
+  document.getElementById('endOverlay').classList.remove('show');
+  render();
+}
+
+// olaylar
+document.getElementById('newBtn').addEventListener('click',newGame);
+document.getElementById('newBtnTop').addEventListener('click',newGame);
+document.getElementById('endNew').addEventListener('click',newGame);
+document.getElementById('helpBtn').addEventListener('click',()=>document.getElementById('helpOverlay').classList.add('show'));
+document.getElementById('helpClose').addEventListener('click',()=>document.getElementById('helpOverlay').classList.remove('show'));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
+
+newGame();
+</script>
+</body>
+</html>
