@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Kelime Waffle — Türkçe</title>
+<title>Kelime Waffle — Türkçe (Günlük)</title>
 <style>
   :root{
     --bg1:#fff6d6;
@@ -16,6 +16,7 @@
     --yellow:#e3b93b;
     --grey:#d9d2bd;
     --grey-ink:#6b6350;
+    --hint:#2b8cff;
     --shadow:0 10px 30px rgba(180,130,0,.18);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -73,18 +74,27 @@
   .tile.hole{background:transparent;box-shadow:none;cursor:default;pointer-events:none}
   .tile.sel{transform:translateY(-4px) scale(1.06);box-shadow:0 8px 0 rgba(0,0,0,.12),0 0 0 4px var(--amber);z-index:2}
   .tile.pulse{animation:pop .28s ease}
+  .tile.hintflash{animation:hintblink .45s ease-in-out 4;z-index:3}
   @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+  @keyframes hintblink{0%,100%{box-shadow:0 4px 0 rgba(0,0,0,.10)}50%{box-shadow:0 0 0 4px var(--hint),0 0 18px var(--hint);transform:scale(1.05)}}
 
-  .hint{max-width:440px;text-align:center;font-size:13px;color:#8a7326;margin:10px 6px 0;line-height:1.5}
+  .hint{max-width:440px;text-align:center;font-size:13px;color:#8a7326;margin:10px 6px 0;line-height:1.5;min-height:20px}
 
-  .newbtn{
-    margin-top:18px;border:none;cursor:pointer;
-    background:linear-gradient(180deg,var(--amber),var(--amber-dark));
-    color:#fff;font-weight:900;letter-spacing:1px;font-size:16px;
-    padding:14px 26px;border-radius:16px;box-shadow:var(--shadow);
-    transition:transform .1s;
+  /* alt aksiyon alanı */
+  #actions{margin-top:16px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;min-height:10px}
+  .btn{
+    border:none;cursor:pointer;font-weight:900;letter-spacing:1px;font-size:15px;
+    padding:13px 22px;border-radius:16px;box-shadow:var(--shadow);transition:transform .1s;
   }
-  .newbtn:active{transform:scale(.96)}
+  .btn:active{transform:scale(.96)}
+  .btn.primary{background:linear-gradient(180deg,var(--amber),var(--amber-dark));color:#fff}
+  .btn.ghost{background:var(--card);color:var(--amber-dark)}
+  .btn.hintbtn{background:linear-gradient(180deg,#4aa3ff,#1f6fd6);color:#fff}
+
+  #cdbar{display:none;margin-top:16px;text-align:center;background:var(--card);border-radius:16px;
+    padding:12px 20px;box-shadow:var(--shadow)}
+  #cdbar .lbl{font-size:12px;letter-spacing:2px;color:#9a8340;font-weight:700}
+  #cdbar .t{font-size:26px;font-weight:900;color:var(--amber-dark);font-variant-numeric:tabular-nums}
 
   /* modal */
   .overlay{
@@ -98,14 +108,17 @@
     animation:rise .25s ease;
   }
   @keyframes rise{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
-  .modal h2{margin:0 0 6px;color:var(--amber-dark);font-size:26px}
+  .modal h2{margin:0 0 6px;color:var(--amber-dark);font-size:24px}
   .modal p{margin:6px 0;color:#6b5a2a;line-height:1.5}
-  .modal .bigstars{font-size:40px;letter-spacing:4px;margin:10px 0}
+  .modal .bigstars{font-size:40px;letter-spacing:4px;margin:8px 0}
   .modal .words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
   .modal .words span{background:#fff2c4;color:#9a7208;font-weight:800;padding:4px 10px;border-radius:8px;font-size:13px;letter-spacing:1px}
   .modal ul{text-align:left;margin:10px 0;padding-left:18px;color:#6b5a2a;line-height:1.7;font-size:14px}
   .modal .legend{display:flex;gap:14px;justify-content:center;margin:12px 0;font-size:13px;color:#6b5a2a}
   .modal .legend b{display:inline-block;width:16px;height:16px;border-radius:5px;vertical-align:-3px;margin-right:5px}
+  .modal .cd{margin:14px 0 4px}
+  .modal .cd .lbl{font-size:12px;letter-spacing:2px;color:#9a8340;font-weight:700}
+  .modal .cd .t{font-size:32px;font-weight:900;color:var(--amber-dark);font-variant-numeric:tabular-nums}
 </style>
 </head>
 <body>
@@ -113,9 +126,9 @@
     <button class="iconbtn" id="helpBtn" title="Nasıl oynanır">?</button>
     <div class="logo">
       <h1>WAFFLE</h1>
-      <div class="sub">TÜRKÇE · 5×5</div>
+      <div class="sub" id="subLbl">GÜNLÜK · 5×5</div>
     </div>
-    <button class="iconbtn" id="newBtnTop" title="Yeni bulmaca">↻</button>
+    <button class="iconbtn" id="cdBtn" title="Sonraki bulmaca" style="visibility:hidden">⏱</button>
   </header>
 
   <div class="statusbar">
@@ -125,18 +138,36 @@
 
   <div id="board"></div>
 
-  <p class="hint">İki karoya dokunarak harflerin yerini değiştir. Amaç: tüm satır ve sütunları geçerli kelime yapmak. <b>Yeşil</b> doğru yerde, <b>sarı</b> kelimede var ama yanlış yerde.</p>
+  <p class="hint" id="hintText">İki karoya dokunarak harflerin yerini değiştir. <b>Yeşil</b> doğru yerde, <b>sarı</b> kelimede var ama yanlış yerde.</p>
 
-  <button class="newbtn" id="newBtn">YENİ BULMACA</button>
+  <div id="actions"></div>
 
-  <!-- Kazanma / Kaybetme -->
+  <div id="cdbar">
+    <div class="lbl">SONRAKİ BULMACAYA</div>
+    <div class="t" id="cdBarTime">00:00:00</div>
+  </div>
+
+  <!-- Haklar bitti -->
+  <div class="overlay" id="outOverlay">
+    <div class="modal">
+      <h2>⏳ Haklarınız bitti!</h2>
+      <p>Ancak denemeye devam edebilirsiniz. İsterseniz <b>ipucu</b> alabilir ya da <b>pes edip</b> cevabı görebilirsiniz.</p>
+      <button class="btn primary" id="outClose" style="margin-top:12px">DEVAM ET</button>
+    </div>
+  </div>
+
+  <!-- Bitiş / Geri sayım -->
   <div class="overlay" id="endOverlay">
     <div class="modal">
       <h2 id="endTitle">🎉 Tebrikler!</h2>
       <div class="bigstars" id="endStars">★★★★★</div>
       <p id="endMsg"></p>
       <div class="words" id="endWords"></div>
-      <button class="newbtn" id="endNew">YENİ BULMACA</button>
+      <div class="cd">
+        <div class="lbl">SONRAKİ BULMACA</div>
+        <div class="t" id="cdTime">00:00:00</div>
+      </div>
+      <button class="btn ghost" id="endClose" style="margin-top:8px">CEVABI GÖSTER</button>
     </div>
   </div>
 
@@ -144,18 +175,18 @@
   <div class="overlay" id="helpOverlay">
     <div class="modal">
       <h2>Nasıl Oynanır?</h2>
-      <p>3 yatay + 3 dikey, toplam <b>6 Türkçe kelime</b> var. Harfler karışık başlar.</p>
+      <p><b>Günlük bulmaca:</b> Her gün yeni, gece 00:00'da yenilenir. 3 yatay + 3 dikey, toplam <b>6 Türkçe kelime</b> var.</p>
       <ul>
         <li>Bir karoya dokun, sonra başka bir karoya dokun → harfler yer değiştirir.</li>
-        <li>Hedef: tüm kelimeleri doğru dizmek.</li>
         <li><b>15 swap</b> hakkın var. Ne kadar az kullanırsan o kadar çok ⭐.</li>
+        <li>Hakkın biterse denemeye devam edebilir, <b>ipucu</b> alabilir ya da <b>pes edebilirsin</b>.</li>
       </ul>
       <div class="legend">
         <div><b style="background:var(--green)"></b>Doğru yer</div>
         <div><b style="background:var(--yellow)"></b>Yanlış yer</div>
-        <div><b style="background:var(--grey)"></b>Bu kelimede yok</div>
+        <div><b style="background:var(--grey)"></b>Yok</div>
       </div>
-      <button class="newbtn" id="helpClose">ANLADIM</button>
+      <button class="btn primary" id="helpClose">ANLADIM</button>
     </div>
   </div>
 
@@ -226,22 +257,49 @@ const PUZZLES = [
 ];
 
 const MAX_SWAPS = 15;
-// aktif hücreler (delikler: (1,1),(1,3),(3,1),(3,3))
 const HOLES = new Set(["1,1","1,3","3,1","3,3"]);
 function isHole(r,c){return HOLES.has(r+","+c);}
+const STORE_KEY = "waffle-daily-v1";
 
-// Türkçe harf dizisi (upper), veri zaten upper
 const boardEl = document.getElementById('board');
 const swapNumEl = document.getElementById('swapNum');
 const starPrevEl = document.getElementById('starPrev');
+const actionsEl = document.getElementById('actions');
+const hintTextEl = document.getElementById('hintText');
+const cdbarEl = document.getElementById('cdbar');
 
-let solution;      // 5x5 çözüm (null=delik)
-let cur;           // 5x5 mevcut durum
-let swapsLeft;
-let selected=null; // {r,c}
-let finished=false;
-let curPuzzle;
+let solution, cur, swapsLeft, selected=null, curPuzzle;
+let phase='play';   // play | trying | win | gaveup | animating
+let dayIdCur=null;
 
+/* ---------- Günlük mantık ---------- */
+function dayId(){
+  const d=new Date();
+  return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())/86400000);
+}
+function msToMidnight(){
+  const n=new Date();
+  const nx=new Date(n.getFullYear(), n.getMonth(), n.getDate()+1, 0,0,0,0);
+  return nx - n;
+}
+function fmtHMS(ms){
+  let s=Math.max(0,Math.floor(ms/1000));
+  const h=Math.floor(s/3600); s%=3600;
+  const m=Math.floor(s/60); s%=60;
+  const p=x=>String(x).padStart(2,'0');
+  return p(h)+':'+p(m)+':'+p(s);
+}
+// tohumlu RNG (mulberry32) — günlük sabit karışım
+function mulberry32(a){
+  return function(){
+    a|=0; a=a+0x6D2B79F5|0;
+    let t=Math.imul(a^a>>>15, 1|a);
+    t=t+Math.imul(t^t>>>7, 61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
+
+/* ---------- Grid kurulum ---------- */
 function buildSolution(p){
   const g=Array.from({length:5},()=>Array(5).fill(null));
   const rows=[0,2,4], cols=[0,2,4];
@@ -249,76 +307,60 @@ function buildSolution(p){
   cols.forEach((c,i)=>{const w=p.down[i]; for(let r=0;r<5;r++) g[r][c]=w[r];});
   return g;
 }
-
 function activePositions(){
   const out=[];
   for(let r=0;r<5;r++)for(let c=0;c<5;c++) if(!isHole(r,c)) out.push([r,c]);
   return out;
-}
-
-function makeScramble(sol){
-  const pos=activePositions();
-  const letters=pos.map(([r,c])=>sol[r][c]);
-  let cur=letters.slice();
-  const R=13; // en fazla 13 swap ile çözülebilir garantisi (<15)
-  let done=0, guard=0;
-  while(done<R && guard<400){
-    guard++;
-    const i=Math.floor(Math.random()*cur.length);
-    const j=Math.floor(Math.random()*cur.length);
-    if(i===j||cur[i]===cur[j]) continue;
-    [cur[i],cur[j]]=[cur[j],cur[i]];
-    done++;
-  }
-  // çözülmüş kalmadığından emin ol
-  if(cur.every((l,k)=>l===letters[k])){
-    // bir geçerli takas yap
-    for(let i=0;i<cur.length;i++)for(let j=i+1;j<cur.length;j++){
-      if(cur[i]!==cur[j]){[cur[i],cur[j]]=[cur[j],cur[i]];return toGrid(pos,cur);}
-    }
-  }
-  return toGrid(pos,cur);
 }
 function toGrid(pos,letters){
   const g=Array.from({length:5},()=>Array(5).fill(null));
   pos.forEach(([r,c],k)=>g[r][c]=letters[k]);
   return g;
 }
-
-// Wordle tarzı tek kelime renklendirme -> rank dizisi (2 yeşil,1 sarı,0 gri)
-function colorWord(curr,sol){
-  const n=curr.length, res=Array(n).fill(0);
-  const pool={};
-  for(let i=0;i<n;i++){
-    if(curr[i]===sol[i]) res[i]=2;
-    else pool[sol[i]]=(pool[sol[i]]||0)+1;
+function makeScrambleSeeded(sol, rnd){
+  const pos=activePositions();
+  const letters=pos.map(([r,c])=>sol[r][c]);
+  let a=letters.slice();
+  const R=13; let done=0, guard=0;
+  while(done<R && guard<600){
+    guard++;
+    const i=Math.floor(rnd()*a.length);
+    const j=Math.floor(rnd()*a.length);
+    if(i===j||a[i]===a[j]) continue;
+    [a[i],a[j]]=[a[j],a[i]]; done++;
   }
-  for(let i=0;i<n;i++){
-    if(res[i]===2) continue;
-    if(pool[curr[i]]>0){res[i]=1;pool[curr[i]]--;}
+  if(a.every((l,k)=>l===letters[k])){
+    for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++)
+      if(a[i]!==a[j]){[a[i],a[j]]=[a[j],a[i]]; return toGrid(pos,a);}
   }
-  return res;
+  return toGrid(pos,a);
 }
 
+/* ---------- Renklendirme ---------- */
+function colorWord(curr,sol){
+  const n=curr.length, res=Array(n).fill(0), pool={};
+  for(let i=0;i<n;i++){ if(curr[i]===sol[i]) res[i]=2; else pool[sol[i]]=(pool[sol[i]]||0)+1; }
+  for(let i=0;i<n;i++){ if(res[i]===2) continue; if(pool[curr[i]]>0){res[i]=1;pool[curr[i]]--;} }
+  return res;
+}
 function computeColors(){
   const rank=Array.from({length:5},()=>Array(5).fill(-1));
-  const rows=[0,2,4], cols=[0,2,4];
-  // yatay kelimeler
-  rows.forEach(r=>{
-    const cc=[0,1,2,3,4].map(c=>cur[r][c]);
-    const ss=[0,1,2,3,4].map(c=>solution[r][c]);
+  [0,2,4].forEach(r=>{
+    const cc=[0,1,2,3,4].map(c=>cur[r][c]), ss=[0,1,2,3,4].map(c=>solution[r][c]);
     const col=colorWord(cc,ss);
     for(let c=0;c<5;c++) rank[r][c]=Math.max(rank[r][c],col[c]);
   });
-  // dikey kelimeler
-  cols.forEach(c=>{
-    const cc=[0,1,2,3,4].map(r=>cur[r][c]);
-    const ss=[0,1,2,3,4].map(r=>solution[r][c]);
+  [0,2,4].forEach(c=>{
+    const cc=[0,1,2,3,4].map(r=>cur[r][c]), ss=[0,1,2,3,4].map(r=>solution[r][c]);
     const col=colorWord(cc,ss);
     for(let r=0;r<5;r++) rank[r][c]=Math.max(rank[r][c],col[r]);
   });
   return rank;
 }
+
+/* ---------- Render ---------- */
+function starStr(n){return '★'.repeat(n)+'☆'.repeat(5-n);}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
 
 function render(){
   const rank=computeColors();
@@ -334,81 +376,199 @@ function render(){
     t.addEventListener('click',()=>onTile(r,c));
     boardEl.appendChild(t);
   }
-  swapNumEl.textContent=swapsLeft;
+  swapNumEl.textContent=Math.max(0,swapsLeft);
   starPrevEl.textContent=starStr(clamp(swapsLeft,0,5));
 }
 
-function starStr(n){return '★'.repeat(n)+'☆'.repeat(5-n);}
-function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
-
+/* ---------- Etkileşim ---------- */
 function onTile(r,c){
-  if(finished) return;
+  if(phase!=='play' && phase!=='trying') return;
   if(!selected){selected={r,c};render();return;}
   if(selected.r===r&&selected.c===c){selected=null;render();return;}
-  // takas
   const a=selected;
+  const changed = cur[a.r][a.c]!==cur[r][c];
   [cur[a.r][a.c],cur[r][c]]=[cur[r][c],cur[a.r][a.c]];
   selected=null;
-  if(cur[a.r][a.c]!==cur[r][c]) swapsLeft--; // aynı harfse hak yakmasın
+  if(changed && phase==='play' && swapsLeft>0) swapsLeft--;
   render();
-  // animasyon
-  pulse(a.r,a.c);pulse(r,c);
-  checkEnd();
+  if(changed){pulse(a.r,a.c);pulse(r,c);}
+  save();
+  if(isSolved()){finishWin();return;}
+  if(phase==='play' && swapsLeft<=0){ triggerOut(); }
 }
-
 function pulse(r,c){
   const el=boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
   if(el){el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),300);}
 }
-
 function isSolved(){
   for(let r=0;r<5;r++)for(let c=0;c<5;c++)
     if(!isHole(r,c)&&cur[r][c]!==solution[r][c]) return false;
   return true;
 }
 
-function checkEnd(){
-  if(isSolved()){finish(true);return;}
-  if(swapsLeft<=0){finish(false);return;}
+/* ---------- Hak bitti akışı ---------- */
+function triggerOut(){
+  phase='trying'; selected=null; save(); render();
+  document.getElementById('outOverlay').classList.add('show');
+}
+function closeOut(){
+  document.getElementById('outOverlay').classList.remove('show');
+  renderActions();
 }
 
-function finish(win){
-  finished=true;
+/* İpucu: mantıklı bir swap'ın iki karosunu yanıp söndür */
+function sensibleSwap(){
+  const pos=activePositions();
+  // 1) iki tarafı da doğru yapan takas
+  for(let i=0;i<pos.length;i++){
+    const [ri,ci]=pos[i]; if(cur[ri][ci]===solution[ri][ci]) continue;
+    for(let j=i+1;j<pos.length;j++){
+      const [rj,cj]=pos[j]; if(cur[rj][cj]===solution[rj][cj]) continue;
+      if(cur[ri][ci]===solution[rj][cj] && cur[rj][cj]===solution[ri][ci]) return [pos[i],pos[j]];
+    }
+  }
+  // 2) en az bir tarafı doğru yapan takas
+  for(let i=0;i<pos.length;i++){
+    const [ri,ci]=pos[i]; if(cur[ri][ci]===solution[ri][ci]) continue;
+    for(let j=0;j<pos.length;j++){
+      if(j===i) continue;
+      const [rj,cj]=pos[j];
+      if(cur[rj][cj]===solution[ri][ci]) return [pos[i],pos[j]];
+    }
+  }
+  return null;
+}
+function hintFlash(){
+  const sw=sensibleSwap();
+  if(!sw){return;}
+  sw.forEach(([r,c])=>{
+    const el=boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
+    if(el){el.classList.remove('hintflash'); void el.offsetWidth; el.classList.add('hintflash');
+      setTimeout(()=>el.classList.remove('hintflash'),2000);}
+  });
+}
+
+/* Pes et: harfleri animasyonla doğru yerine getir */
+function giveUp(){
+  phase='animating'; selected=null; renderActions();
+  const wrong=activePositions().filter(([r,c])=>cur[r][c]!==solution[r][c]);
+  if(wrong.length===0){ finishGaveUp(); return; }
+  wrong.forEach(([r,c],k)=>{
+    setTimeout(()=>{ cur[r][c]=solution[r][c]; render(); pulse(r,c); }, k*80);
+  });
+  setTimeout(finishGaveUp, wrong.length*80 + 450);
+}
+
+/* ---------- Bitiş ---------- */
+function finishWin(){ phase='win'; selected=null; save(); showEnd(true); }
+function finishGaveUp(){ phase='gaveup'; selected=null; save(); showEnd(false); }
+
+function showEnd(win){
+  render(); renderActions();
   const ov=document.getElementById('endOverlay');
   const stars=win?clamp(swapsLeft,0,5):0;
-  document.getElementById('endTitle').textContent = win?'🎉 Harika!':'😅 Swap bitti';
-  document.getElementById('endStars').textContent = starStr(stars);
+  document.getElementById('endTitle').textContent = win?'🎉 Tebrikler!':'🏳️ Pes ettin';
+  const st=document.getElementById('endStars');
+  if(win){ st.style.display=''; st.textContent=starStr(stars); }
+  else { st.style.display='none'; }
   document.getElementById('endMsg').textContent = win
-    ? (stars===5?'Mükemmel! Tam puan.':`${MAX_SWAPS-swapsLeft} swap ile çözdün.`)
-    : 'Doğru cevaplar aşağıda 👇';
-  // kaybettiyse çözümü göster
-  if(!win){cur=solution.map(row=>row.slice());render();}
-  const wbox=document.getElementById('endWords');
-  wbox.innerHTML='';
-  [...curPuzzle.across,...curPuzzle.down].forEach(w=>{
-    const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);
-  });
+    ? (stars===5?'Mükemmel! Bugünü tam puanla bitirdin.':`Bugünü ${MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS)} swap ile bitirdin.`)
+    : 'Doğru cevap gösterildi. Yarın yeni bulmaca!';
+  const wbox=document.getElementById('endWords'); wbox.innerHTML='';
+  [...curPuzzle.across,...curPuzzle.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);});
   ov.classList.add('show');
+  document.getElementById('cdBtn').style.visibility='visible';
+  updateCountdown();
 }
 
-function newGame(){
-  finished=false;selected=null;swapsLeft=MAX_SWAPS;
-  curPuzzle=PUZZLES[Math.floor(Math.random()*PUZZLES.length)];
+/* ---------- Alt aksiyon alanı ---------- */
+function renderActions(){
+  actionsEl.innerHTML='';
+  if(phase==='trying'){
+    hintTextEl.textContent='Hakların bitti — istersen ipucu al ya da pes et.';
+    cdbarEl.style.display='none';
+    const h=document.createElement('button'); h.className='btn hintbtn'; h.textContent='💡 İPUCU';
+    h.onclick=hintFlash;
+    const g=document.createElement('button'); g.className='btn ghost'; g.textContent='🏳️ PES ET';
+    g.onclick=giveUp;
+    actionsEl.appendChild(h); actionsEl.appendChild(g);
+  } else if(phase==='win' || phase==='gaveup'){
+    hintTextEl.textContent = phase==='win' ? 'Bugünü bitirdin! Yarın yeni bulmaca 👇' : 'Cevap gösterildi. Yarın yeni bulmaca 👇';
+    cdbarEl.style.display='';
+  } else {
+    hintTextEl.innerHTML='İki karoya dokunarak harflerin yerini değiştir. <b>Yeşil</b> doğru yerde, <b>sarı</b> kelimede var ama yanlış yerde.';
+    cdbarEl.style.display='none';
+  }
+}
+
+/* ---------- Geri sayım ---------- */
+function updateCountdown(){
+  const t=fmtHMS(msToMidnight());
+  document.getElementById('cdTime').textContent=t;
+  document.getElementById('cdBarTime').textContent=t;
+}
+
+/* ---------- Kayıt ---------- */
+function save(){
+  try{
+    const pos=activePositions();
+    const data={ dayId:dayIdCur, letters:pos.map(([r,c])=>cur[r][c]), swapsLeft, phase };
+    localStorage.setItem(STORE_KEY, JSON.stringify(data));
+  }catch(e){}
+}
+function load(){
+  try{ return JSON.parse(localStorage.getItem(STORE_KEY)); }catch(e){ return null; }
+}
+
+/* ---------- Günlük yükleme ---------- */
+function loadDaily(){
+  dayIdCur=dayId();
+  const idx = ((dayIdCur % PUZZLES.length)+PUZZLES.length)%PUZZLES.length;
+  curPuzzle=PUZZLES[idx];
   solution=buildSolution(curPuzzle);
-  cur=makeScramble(solution);
+  document.getElementById('subLbl').textContent='GÜNLÜK · #'+dayIdCur;
+
+  const saved=load();
+  if(saved && saved.dayId===dayIdCur && Array.isArray(saved.letters) && saved.letters.length===21){
+    cur=toGrid(activePositions(), saved.letters);
+    swapsLeft=(typeof saved.swapsLeft==='number')?saved.swapsLeft:MAX_SWAPS;
+    phase=saved.phase||'play';
+  } else {
+    cur=makeScrambleSeeded(solution, mulberry32((dayIdCur*2654435761)>>>0));
+    swapsLeft=MAX_SWAPS; phase='play';
+    save();
+  }
+
+  selected=null;
+  document.getElementById('outOverlay').classList.remove('show');
   document.getElementById('endOverlay').classList.remove('show');
-  render();
+  render(); renderActions();
+
+  if(phase==='win' || phase==='gaveup'){ showEnd(phase==='win'); }
+  else { document.getElementById('cdBtn').style.visibility='hidden'; }
 }
 
-// olaylar
-document.getElementById('newBtn').addEventListener('click',newGame);
-document.getElementById('newBtnTop').addEventListener('click',newGame);
-document.getElementById('endNew').addEventListener('click',newGame);
+/* ---------- Saat / gün değişimi ---------- */
+setInterval(()=>{
+  if(dayId()!==dayIdCur){ loadDaily(); return; }
+  if(phase==='win' || phase==='gaveup') updateCountdown();
+}, 1000);
+
+/* ---------- Olaylar ---------- */
+document.getElementById('outClose').addEventListener('click',closeOut);
+document.getElementById('endClose').addEventListener('click',()=>{
+  document.getElementById('endOverlay').classList.remove('show');
+});
+document.getElementById('cdBtn').addEventListener('click',()=>{
+  if(phase==='win'||phase==='gaveup'){ updateCountdown(); document.getElementById('endOverlay').classList.add('show'); }
+});
 document.getElementById('helpBtn').addEventListener('click',()=>document.getElementById('helpOverlay').classList.add('show'));
 document.getElementById('helpClose').addEventListener('click',()=>document.getElementById('helpOverlay').classList.remove('show'));
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('show');}));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
+  if(e.target===o && o.id!=='outOverlay') o.classList.remove('show');
+}));
 
-newGame();
+loadDaily();
 </script>
 </body>
 </html>
