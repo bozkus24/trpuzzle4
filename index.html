@@ -168,7 +168,7 @@
       <div class="sub" id="subLbl">GÜNLÜK · 5×5</div>
     </div>
     <div class="hgroup">
-      <button class="iconbtn" id="cdBtn" title="Sonraki bulmaca" style="display:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="13"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="9"/></svg></button>
+      <button class="iconbtn" id="cdBtn" title="İstatistikler"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="13"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="9"/></svg></button>
       <button class="iconbtn" id="helpBtn" title="Nasıl oynanır">?</button>
       <button class="iconbtn" id="themeBtn" title="Aydınlık / Karanlık mod"></button>
     </div>
@@ -210,12 +210,7 @@
       <div class="mini" id="miniGrid"></div>
       <p id="endMsg"></p>
       <div class="words" id="endWords"></div>
-      <div class="statsbox">
-        <div class="statrow"><span>Oynanan (günlük)</span><b id="statPlayed">0</b></div>
-        <div class="statrow"><span>Kazanma oranı</span><b id="statWin">%0</b></div>
-        <div class="dist-title">DAĞILIM (GÜNLÜK)</div>
-        <div class="dist" id="stDist"></div>
-      </div>
+      <div id="endStatsBox"></div>
       <div class="rbtns">
         <button class="btn ghost" id="endTry">Başka kelime dene</button>
         <button class="btn ghost" id="endShare">Paylaş</button>
@@ -224,6 +219,15 @@
         <span class="lbl">Sonraki bulmaca</span>
         <span class="t" id="cdTime">00:00:00</span>
       </div>
+    </div>
+  </div>
+
+  <!-- İstatistik -->
+  <div class="overlay" id="statsOverlay">
+    <div class="modal">
+      <h2>İstatistikler</h2>
+      <div id="soloStatsBox"></div>
+      <button class="btn ghost" id="statsClose" style="margin-top:14px">KAPAT</button>
     </div>
   </div>
 
@@ -558,16 +562,14 @@ function showEnd(win){
 
   const wbox=document.getElementById('endWords'); wbox.innerHTML='';
   [...curPuzzle.across,...curPuzzle.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);});
-  renderStats((mode==='daily'&&win)?clamp(swapsLeft,0,5):-1);
+  renderStatsBlock(document.getElementById('endStatsBox'), (mode==='daily'&&win)?clamp(swapsLeft,0,5):-1);
 
   if(mode==='daily'){
     endCd.style.display='flex';
-    document.getElementById('cdBtn').style.display='flex';
-    updateCountdown();
+      updateCountdown();
   } else {
     endCd.style.display='none';
-    document.getElementById('cdBtn').style.display='none';
-  }
+    }
   document.getElementById('endOverlay').classList.add('show');
 }
 
@@ -632,22 +634,21 @@ function recordStats(win, stars){
   if(win){ s.wins++; s.dist[stars]=(s.dist[stars]||0)+1; }
   saveStats(s);
 }
-function renderStats(highlight){
+function renderStatsBlock(el, highlight){
   const s=loadStats();
-  document.getElementById("statPlayed").textContent=s.played;
   const wr=s.played?Math.round(s.wins/s.played*100):0;
-  document.getElementById("statWin").textContent="%"+wr;
   let max=1; for(let k=0;k<=5;k++) max=Math.max(max,s.dist[k]);
-  const box=document.getElementById("stDist"); box.innerHTML="";
+  let html='<div class="statsbox">'
+    +'<div class="statrow"><span>Oynanan (günlük)</span><b>'+s.played+'</b></div>'
+    +'<div class="statrow"><span>Kazanma oranı</span><b>%'+wr+'</b></div>'
+    +'<div class="dist-title">DAĞILIM (GÜNLÜK)</div><div class="dist">';
   [5,4,3,2,1,0].forEach(k=>{
-    const c=s.dist[k]||0;
-    const row=document.createElement("div"); row.className="drow";
-    const lab=document.createElement("span"); lab.className="dk"; lab.textContent=k+" \u2605";
-    const bar=document.createElement("div"); bar.className="dbar";
-    const fill=document.createElement("i"); fill.className="dfill"+(highlight===k?" cur":"");
-    fill.style.width=Math.max(12,(c/max)*100)+"%"; fill.textContent=c;
-    bar.appendChild(fill); row.appendChild(lab); row.appendChild(bar); box.appendChild(row);
+    const c=s.dist[k]||0, w=Math.max(12,(c/max)*100);
+    html+='<div class="drow"><span class="dk">'+k+' \u2605</span><div class="dbar">'
+      +'<i class="dfill'+(highlight===k?' cur':'')+'" style="width:'+w+'%">'+c+'</i></div></div>';
   });
+  html+='</div></div>';
+  el.innerHTML=html;
 }
 
 /* ---------- Günlük yükleme ---------- */
@@ -666,7 +667,6 @@ function newUnlimited(){
   unlimSeed^=(Date.now()&0xffff)+Math.floor(performance.now());
   cur=makeScrambleSeeded(solution, mulberry32(unlimSeed>>>0));
   document.getElementById('endOverlay').classList.remove('show');
-  document.getElementById('cdBtn').style.display='none';
   render(); renderActions();
 }
 
@@ -701,7 +701,6 @@ function loadDaily(){
   render(); renderActions();
 
   if(phase==='win' || phase==='lose'){ showEnd(phase==='win'); }
-  else { document.getElementById('cdBtn').style.display='none'; }
 }
 
 /* ---------- Saat / gün değişimi ---------- */
@@ -721,8 +720,10 @@ document.getElementById('modeDaily').addEventListener('click',()=>setMode('daily
 document.getElementById('modeUnlim').addEventListener('click',()=>setMode('unlimited'));
 document.getElementById('themeBtn').addEventListener('click',toggleTheme);
 document.getElementById('cdBtn').addEventListener('click',()=>{
-  if(phase==='win'||phase==='lose'){ updateCountdown(); document.getElementById('endOverlay').classList.add('show'); }
+  renderStatsBlock(document.getElementById('soloStatsBox'), -1);
+  document.getElementById('statsOverlay').classList.add('show');
 });
+document.getElementById('statsClose').addEventListener('click',()=>document.getElementById('statsOverlay').classList.remove('show'));
 document.getElementById('helpBtn').addEventListener('click',()=>document.getElementById('helpOverlay').classList.add('show'));
 document.getElementById('helpClose').addEventListener('click',()=>document.getElementById('helpOverlay').classList.remove('show'));
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
