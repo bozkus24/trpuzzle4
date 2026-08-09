@@ -363,6 +363,11 @@ function dayId(){
   const d=new Date();
   return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())/86400000);
 }
+// gösterilen bulmaca no: 1 Ocak = #1 (yılın günü)
+function dayNo(){
+  const d=new Date();
+  return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(d.getFullYear(),0,1))/86400000)+1;
+}
 function msToMidnight(){
   const n=new Date();
   const nx=new Date(n.getFullYear(), n.getMonth(), n.getDate()+1, 0,0,0,0);
@@ -541,7 +546,7 @@ function showEnd(win){
   const head=document.getElementById('endHead');
   const st=document.getElementById('endStars');
   const endCd=document.getElementById('endCd');
-  const tag = mode==='daily' ? '#'+dayIdCur : 'SINIRSIZ';
+  const tag = mode==='daily' ? '#'+dayNo() : 'SINIRSIZ';
 
   if(win){
     head.className='rhead win';
@@ -683,7 +688,7 @@ function loadDaily(){
   const idx = ((dayIdCur % PUZZLES.length)+PUZZLES.length)%PUZZLES.length;
   curPuzzle=PUZZLES[idx];
   solution=buildSolution(curPuzzle);
-  document.getElementById('subLbl').textContent='GÜNLÜK · #'+dayIdCur;
+  document.getElementById('subLbl').textContent='GÜNLÜK · #'+dayNo();
 
   const saved=load();
   if(saved && saved.dayId===dayIdCur && Array.isArray(saved.letters) && saved.letters.length===21){
