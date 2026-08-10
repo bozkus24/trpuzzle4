@@ -132,7 +132,9 @@
   .modal .legend{display:flex;gap:14px;justify-content:center;margin:12px 0;font-size:13px;color:var(--muted)}
   .modal .legend b{display:inline-block;width:16px;height:16px;border-radius:5px;vertical-align:-3px;margin-right:5px}
   .dontshow{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--muted);margin:12px 0 4px;cursor:pointer;user-select:none}
-  .dontshow input{width:16px;height:16px;cursor:pointer;accent-color:var(--amber-dark)}
+  .dontshow input{appearance:none;-webkit-appearance:none;width:18px;height:18px;border-radius:4px;border:2px solid var(--muted);background:var(--card);cursor:pointer;position:relative;flex:none}
+  .dontshow input:checked{background:var(--amber-dark);border-color:var(--amber-dark)}
+  .dontshow input:checked::after{content:"";position:absolute;left:5px;top:1px;width:4px;height:9px;border:solid var(--page-bg);border-width:0 2px 2px 0;transform:rotate(45deg)}
   .modal .cd{margin:14px 0 4px}
   .modal .cd .lbl{font-size:12px;letter-spacing:2px;color:var(--muted);font-weight:700}
   .modal .cd .t{font-size:32px;font-weight:900;color:var(--amber-dark);font-variant-numeric:tabular-nums}
