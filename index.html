@@ -329,7 +329,7 @@ function isHole(r,c){return HOLES.has(r+","+c);}
 const STORE_KEY = "waffle-daily-v2";
 const MODE_KEY = "waffle-mode-v1";
 const THEME_KEY = "waffle-theme-v1";
-const STATS_KEY = "waffle-stats-v1";
+const STATS_KEYS = {daily:"waffle-stats-v1", unlimited:"waffle-stats-unlim-v1"};
 const HELP_KEY = "waffle-help-hidden-v1";
 
 const boardEl = document.getElementById('board');
@@ -518,8 +518,8 @@ function revealAndLose(){
 }
 
 /* ---------- Bitiş ---------- */
-function finishWin(){ phase='win'; selected=null; if(mode==='daily') recordStats(true, clamp(swapsLeft,0,5)); save(); showEnd(true); }
-function finishLose(){ phase='lose'; selected=null; if(mode==='daily') recordStats(false,0); save(); showEnd(false); }
+function finishWin(){ phase='win'; selected=null; recordStats(mode, true, clamp(swapsLeft,0,5)); save(); showEnd(true); }
+function finishLose(){ phase='lose'; selected=null; recordStats(mode, false, 0); save(); showEnd(false); }
 
 function buildMini(){
   const m=document.getElementById('miniGrid'); m.innerHTML='';
@@ -574,7 +574,7 @@ function showEnd(win){
 
   const wbox=document.getElementById('endWords'); wbox.innerHTML='';
   [...curPuzzle.across,...curPuzzle.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);});
-  renderStatsBlock(document.getElementById('endStatsBox'), (mode==='daily'&&win)?clamp(swapsLeft,0,5):-1);
+  renderStatsBlock(document.getElementById('endStatsBox'), mode, win?clamp(swapsLeft,0,5):-1);
 
   if(mode==='daily'){
     endCd.style.display='flex';
@@ -630,30 +630,32 @@ function saveMode(){ try{ localStorage.setItem(MODE_KEY, mode); }catch(e){} }
 function loadMode(){ try{ return localStorage.getItem(MODE_KEY); }catch(e){ return null; } }
 
 /* ---------- İstatistik (yalnızca günlük) ---------- */
-function loadStats(){
-  let s=null; try{ s=JSON.parse(localStorage.getItem(STATS_KEY)); }catch(e){}
+function loadStats(m){
+  let s=null; try{ s=JSON.parse(localStorage.getItem(STATS_KEYS[m])); }catch(e){}
   if(!s||typeof s!=="object") s={};
   s.played=s.played||0; s.wins=s.wins||0; s.lastDay=(s.lastDay===undefined?null:s.lastDay);
   if(!s.dist||typeof s.dist!=="object") s.dist={};
   for(let k=0;k<=5;k++) s.dist[k]=s.dist[k]||0;
   return s;
 }
-function saveStats(s){ try{ localStorage.setItem(STATS_KEY, JSON.stringify(s)); }catch(e){} }
-function recordStats(win, stars){
-  const s=loadStats();
-  if(s.lastDay===dayIdCur) return;   // bugün zaten kaydedildi
-  s.lastDay=dayIdCur; s.played++;
+function saveStats(m,s){ try{ localStorage.setItem(STATS_KEYS[m], JSON.stringify(s)); }catch(e){} }
+function recordStats(m, win, stars){
+  const s=loadStats(m);
+  if(m==='daily'){ if(s.lastDay===dayIdCur) return; s.lastDay=dayIdCur; } // günlük: günde bir
+  s.played++;
   if(win){ s.wins++; s.dist[stars]=(s.dist[stars]||0)+1; }
-  saveStats(s);
+  saveStats(m,s);
 }
-function renderStatsBlock(el, highlight){
-  const s=loadStats();
+function renderStatsBlock(el, m, highlight){
+  const s=loadStats(m);
+  const modeLbl = m==='daily' ? 'Günlük' : 'Sınırsız';
+  const distLbl = m==='daily' ? 'GÜNLÜK' : 'SINIRSIZ';
   const wr=s.played?Math.round(s.wins/s.played*100):0;
   let max=1; for(let k=0;k<=5;k++) max=Math.max(max,s.dist[k]);
   let html='<div class="statsbox">'
-    +'<div class="statrow"><span>Oynanan (günlük)</span><b>'+s.played+'</b></div>'
+    +'<div class="statrow"><span>Oynanan · '+modeLbl+'</span><b>'+s.played+'</b></div>'
     +'<div class="statrow"><span>Kazanma oranı</span><b>%'+wr+'</b></div>'
-    +'<div class="dist-title">DAĞILIM (GÜNLÜK)</div><div class="dist">';
+    +'<div class="dist-title">DAĞILIM · '+distLbl+'</div><div class="dist">';
   [5,4,3,2,1,0].forEach(k=>{
     const c=s.dist[k]||0, w=Math.max(12,(c/max)*100);
     html+='<div class="drow"><span class="dk">'+k+' \u2605</span><div class="dbar">'
@@ -732,7 +734,7 @@ document.getElementById('modeDaily').addEventListener('click',()=>setMode('daily
 document.getElementById('modeUnlim').addEventListener('click',()=>setMode('unlimited'));
 document.getElementById('themeBtn').addEventListener('click',toggleTheme);
 document.getElementById('cdBtn').addEventListener('click',()=>{
-  renderStatsBlock(document.getElementById('soloStatsBox'), -1);
+  renderStatsBlock(document.getElementById('soloStatsBox'), mode, -1);
   document.getElementById('statsOverlay').classList.add('show');
 });
 document.getElementById('statsClose').addEventListener('click',()=>document.getElementById('statsOverlay').classList.remove('show'));
