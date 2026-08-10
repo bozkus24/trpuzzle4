@@ -161,6 +161,16 @@
   .dbar{flex:1;display:flex}
   .dfill{background:var(--muted);color:#fff;font-weight:800;font-size:12px;line-height:1;padding:3px 7px;border-radius:4px;text-align:right;min-width:22px;box-sizing:border-box}
   .dfill.cur{background:var(--green)}
+  .archbar{margin-top:14px}
+  .archbtn{border:1px solid var(--card-brd);background:var(--card);color:var(--ink);font-weight:800;letter-spacing:2px;font-size:13px;padding:11px 26px;border-radius:12px;box-shadow:var(--shadow);cursor:pointer;transition:transform .1s}
+  .archbtn:active{transform:scale(.96)}
+  .archlist{max-height:52vh;overflow-y:auto;margin:6px 0 2px;text-align:left}
+  .archrow{width:100%;display:flex;align-items:center;gap:10px;background:transparent;border:none;border-bottom:1px solid var(--strip-brd);padding:11px 4px;cursor:pointer;color:var(--ink);font-family:inherit}
+  .archrow:active{background:var(--card-brd)}
+  .archrow.cur{background:var(--card-brd);border-radius:8px}
+  .archrow .an{font-weight:800;font-size:14px;min-width:104px;text-align:left}
+  .archrow .ad{flex:1;font-size:12px;color:var(--muted)}
+  .archrow .as{font-size:12px;letter-spacing:1px;color:var(--muted);min-width:56px;text-align:right}
 </style>
 </head>
 <body>
@@ -181,10 +191,7 @@
 
   <main class="content">
 
-  <div class="modes">
-    <button class="modebtn active" id="modeDaily">GÜNLÜK</button>
-    <button class="modebtn" id="modeUnlim">SINIRSIZ</button>
-  </div>
+  <div class="archbar"><button class="archbtn" id="archiveBtn">ARŞİV</button></div>
 
   <div class="statusbar">
     <div class="swaps"><span class="num" id="swapNum">15</span><span class="lbl" id="swapLbl">HAMLE KALDI</span></div>
@@ -216,7 +223,6 @@
       <div class="words" id="endWords"></div>
       <div id="endStatsBox"></div>
       <div class="rbtns">
-        <button class="btn ghost" id="endTry">Başka kelime dene</button>
         <button class="btn ghost" id="endShare">Paylaş</button>
       </div>
       <div class="cdstrip" id="endCd">
@@ -235,6 +241,15 @@
     </div>
   </div>
 
+  <!-- Arşiv -->
+  <div class="overlay" id="archiveOverlay">
+    <div class="modal">
+      <h2>Arşiv</h2>
+      <div id="archiveList" class="archlist"></div>
+      <button class="btn ghost" id="archiveClose" style="margin-top:12px">KAPAT</button>
+    </div>
+  </div>
+
   <!-- Yardım -->
   <div class="overlay" id="helpOverlay">
     <div class="modal">
@@ -244,7 +259,7 @@
         <li>Bir karoya dokun, sonra başka bir karoya dokununca harfler yer değiştirir.</li>
         <li><b>15 hamle</b> hakkın var. Ne kadar az kullanırsan o kadar çok ★.</li>
         <li>Hakkın biterse cevap gösterilir; yarın yeni bulmaca!</li>
-        <li><b>Sınırsız mod:</b> sınır olmadan, istediğin kadar rastgele bulmaca oyna.</li>
+        <li><b>Arşiv:</b> geçmiş günlerin bulmacalarını da oynayabilirsin.</li>
       </ul>
       <div class="legend">
         <div><b style="background:var(--green)"></b>Doğru yer</div>
@@ -260,502 +275,259 @@
 <script>
 const PUZZLES = [
   {across:["SEZON","BÜYÜK","HAFTA"],down:["SABAH","ZAYIF","NOKTA"]},
-  {across:["HESAP","BÜYÜK","RAHAT"],down:["HABER","SİYAH","PAKET"]},
   {across:["DURUM","İNSAN","ALMAK"],down:["DAİMA","RESİM","MİNİK"]},
+  {across:["HESAP","BÜYÜK","RAHAT"],down:["HABER","SİYAH","PAKET"]},
   {across:["TEMEL","BÜYÜK","İNSAN"],down:["TABİİ","MAYIS","LAKİN"]},
+  {across:["TEMAS","BÜYÜK","İNSAN"],down:["TABİİ","MAYIS","SAKIN"]},
   {across:["YAZAR","MERAK","KARAR"],down:["YEMEK","ZARAR","REKOR"]},
+  {across:["SAKIN","BÜYÜK","HAFTA"],down:["SABAH","KEYİF","NOKTA"]},
+  {across:["DOSYA","KÜÇÜK","ZAMAN"],down:["DOKUZ","SEÇİM","AŞKIN"]},
   {across:["SICAK","ZAMAN","EYLÜL"],down:["SİZDE","CEMAL","KANAL"]},
-  {across:["SABAH","KÜÇÜK","ZAMAN"],down:["SEKİZ","BİÇİM","HAKAN"]},
   {across:["DİREK","İNSAN","ALMAK"],down:["DAİMA","RESİM","KONUK"]},
+  {across:["SABAH","KÜÇÜK","ZAMAN"],down:["SEKİZ","BİÇİM","HAKAN"]},
   {across:["METRE","ZAMAN","KULAK"],down:["MÜZİK","TEMEL","ETNİK"]},
+  {across:["DARBE","İNSAN","ALMAK"],down:["DAİMA","RESİM","ETNİK"]},
+  {across:["NESNE","KÜÇÜK","ALMAK"],down:["NOKTA","SEÇİM","ERKEK"]},
+  {across:["KÖPEK","ZAMAN","YAKIN"],down:["KUZEY","PAMUK","KANUN"]},
+  {across:["SENDE","KÜÇÜK","KANUN"],down:["SOKAK","NİÇİN","ERKEN"]},
+  {across:["METRO","DÜNYA","AŞIRI"],down:["MEDYA","TANRI","OLASI"]},
   {across:["YAVAŞ","KARAR","NİSAN"],down:["YAKIN","VİRÜS","ŞİRİN"]},
   {across:["EKMEK","GÜZEL","NOKTA"],down:["ENGİN","MÜZİK","KALMA"]},
   {across:["EKSİK","GÜZEL","LANET"],down:["ENGEL","SEZON","KİLİT"]},
   {across:["PARÇA","ERKEK","SORUN"],down:["PRENS","REKOR","AŞKIN"]},
   {across:["YARAR","TAKİP","KARAR"],down:["YATAK","REKOR","RAPOR"]},
   {across:["HASAR","TAKİP","PAZAR"],down:["HİTAP","SEKİZ","RAPOR"]},
-  {across:["SESLİ","DÜNYA","KREDİ"],down:["SADIK","SENDE","İDARİ"]},
+  {across:["SAYGI","KARAR","ZARAR"],down:["SEKİZ","YARAR","ISRAR"]},
+  {across:["HASAR","KÜÇÜK","MEMUR"],down:["HAKİM","SEÇİM","REKOR"]},
+  {across:["BİLGİ","DÜNYA","METRE"],down:["BADEM","LANET","İFADE"]},
+  {across:["BELLİ","DÜNYA","METRE"],down:["BADEM","LANET","İFADE"]},
+  {across:["KEYİF","DÜNYA","ORTAK"],down:["KADRO","YANIT","FRANK"]},
   {across:["BASKI","HABER","SÜPER"],down:["BAHİS","SEBEP","ISRAR"]},
   {across:["KADRO","DÜNYA","HIZLI"],down:["KADEH","DENİZ","OLASI"]},
-  {across:["KEYİF","DÜNYA","ORTAK"],down:["KADRO","YANIT","FRANK"]},
   {across:["ÖDEME","GENEL","TAKIM"],down:["ÖRGÜT","ETNİK","EYLEM"]},
   {across:["HELAL","KADIN","MURAT"],down:["HAKİM","LİDER","LANET"]},
   {across:["ORTAK","GENEL","NOKTA"],down:["OLGUN","TANIK","KALMA"]},
-  {across:["ÇIKTI","BÖLÜM","KÜÇÜK"],down:["ÇABUK","KILIÇ","IRMAK"]},
   {across:["SİYAH","KADIN","TAKIM"],down:["SAKAT","YEDEK","HANIM"]},
-  {across:["SONUÇ","KÜÇÜK","TANRI"],down:["SAKAT","NİÇİN","ÇIKTI"]},
+  {across:["İDDİA","GENEL","LAYIK"],down:["İŞGAL","DENEY","AYLIK"]},
+  {across:["TARIM","KADIN","MERAK"],down:["TAKIM","RADAR","MİNİK"]},
   {across:["HAFİF","KADIN","KANAL"],down:["HUKUK","FİDAN","FİNAL"]},
   {across:["ÖRNEK","GÜZEL","TAKİP"],down:["ÖRGÜT","NAZİK","KULÜP"]},
   {across:["AKŞAM","ERKEK","EYLÜL"],down:["ACELE","ŞEKİL","MAKUL"]},
+  {across:["KEŞİF","HAFTA","ERKEK"],down:["KAHVE","ŞAFAK","FRANK"]},
+  {across:["HİLAL","KADIN","MURAT"],down:["HAKİM","LİDER","LANET"]},
+  {across:["YÜZLÜ","MERAK","KARAR"],down:["YEMEK","ZARAR","ÜLKER"]},
   {across:["PLAKA","ERKEK","SORUN"],down:["PRENS","ASKER","AŞKIN"]},
+  {across:["YAVAŞ","TAKİP","METRE"],down:["YETİM","VAKİT","ŞÜPHE"]},
   {across:["KAVGA","ÇOCUK","ALTIN"],down:["KAÇTA","VÜCUT","AŞKIN"]},
+  {across:["SEFER","TAKİP","ŞEHİR"],down:["SATIŞ","FIKIH","RAPOR"]},
   {across:["ÖTEKİ","GENEL","TAKIM"],down:["ÖRGÜT","ETNİK","İŞLEM"]},
-  {across:["ŞARKI","HABER","TUTAR"],down:["ŞEHİT","ROBOT","ISRAR"]},
+  {across:["OLGUN","MERAK","ŞEKLİ"],down:["OLMUŞ","GEREK","NAKLİ"]},
+  {across:["ZENCİ","HAFTA","RESMİ"],down:["ZEHİR","NEFES","İDARİ"]},
+  {across:["ŞEKLİ","HAFTA","RESMİ"],down:["ŞEHİR","KAFES","İDARİ"]},
   {across:["METRO","DOĞRU","ACABA"],down:["MEDYA","TUĞLA","OKUMA"]},
-  {across:["OLGUN","MERAK","ŞEKİL"],down:["OLMUŞ","GEREK","NAKİL"]},
+  {across:["ŞARKI","HABER","TUTAR"],down:["ŞEHİT","ROBOT","ISRAR"]},
   {across:["OLASI","EYLÜL","ALMAK"],down:["OPERA","ANLAM","ISLAK"]},
-  {across:["ÇİZGİ","KOLAY","ROMAN"],down:["ÇIKAR","ZALİM","İSYAN"]},
-  {across:["ŞEHİT","HAFTA","NEFES"],down:["ŞAHİN","HAFİF","TRANS"]},
-  {across:["SEVGİ","HAFTA","LİTRE"],down:["SAHİL","VEFAT","İFADE"]},
   {across:["ÇAVUŞ","ÇOCUK","KATİL"],down:["ÇİÇEK","VÜCUT","ŞEKİL"]},
   {across:["YARAR","SABAH","KİTAP"],down:["YASAK","ROBOT","RAHİP"]},
+  {across:["TAHTA","GÜZEL","YARIN"],down:["TUGAY","HAZIR","ASLAN"]},
+  {across:["ÖDÜNÇ","GEREK","TATLI"],down:["ÖRGÜT","ÜCRET","ÇIKTI"]},
   {across:["EVVEL","GEREK","NİSAN"],down:["ENGİN","VİRÜS","LAKİN"]},
-  {across:["HAZIR","MERAK","MURAT"],down:["HAMAM","ZARAR","ROKET"]},
+  {across:["ÇİZGİ","KOLAY","ALMAN"],down:["ÇIKMA","ZALİM","İSYAN"]},
+  {across:["OLASI","TAKIM","MERAK"],down:["ORTAM","ASKER","IRMAK"]},
+  {across:["SABIR","ÇOCUK","ASKER"],down:["SAÇMA","BÖCEK","REKOR"]},
+  {across:["YARIŞ","HABER","TATLI"],down:["YAHUT","ROBOT","ŞARKI"]},
+  {across:["TEORİ","KOLAY","SORUN"],down:["TAKAS","ONLAR","İSYAN"]},
+  {across:["TEMAS","GÜZEL","YAKIN"],down:["TUGAY","MÜZİK","SALON"]},
+  {across:["KONYA","ÇOCUK","RAPOR"],down:["KAÇAR","NECİP","ASKER"]},
+  {across:["BASTI","HABER","SÜPER"],down:["BAHİS","SEBEP","ISRAR"]},
   {across:["HAVUZ","YAKIN","TATLI"],down:["HAYAT","VAKİT","ZANLI"]},
+  {across:["ALTAY","GENEL","NİSAN"],down:["AZGIN","TENİS","YALAN"]},
+  {across:["UKALA","GEREK","NİSAN"],down:["UYGUN","ADRES","AŞKIN"]},
   {across:["YAŞLI","DURUM","KÖPEK"],down:["YEDEK","ŞARAP","IRMAK"]},
-  {across:["BAZEN","GEREK","MURAT"],down:["BEGÜM","ZARAR","NAKİT"]},
   {across:["GÖVDE","ÇOCUK","METİN"],down:["GEÇİM","VÜCUT","ERKEN"]},
+  {across:["BAZEN","GEREK","MURAT"],down:["BEGÜM","ZARAR","NAKİT"]},
+  {across:["TERÖR","SABAH","SATIN"],down:["TESİS","ROBOT","REHİN"]},
+  {across:["ŞİFRE","YAKIN","TARAF"],down:["ŞAYET","FİKİR","ESNAF"]},
+  {across:["YAVRU","MUTLU","KONYA"],down:["YEMEK","VATAN","UYUMA"]},
+  {across:["KARGO","MUTLU","KONYA"],down:["KOMİK","RUTİN","OKUMA"]},
+  {across:["CANLI","HAZIR","ZARAR"],down:["CİHAZ","NAZAR","ISRAR"]},
+  {across:["SOYLU","DOĞRU","KONYA"],down:["SADIK","YOĞUN","UYUMA"]},
   {across:["ŞEHİR","BÖLÜM","NİSAN"],down:["ŞABAN","HALİS","ROMAN"]},
-  {across:["DÖVÜŞ","YAKIN","TATLI"],down:["DİYET","VAKİT","ŞANLI"]},
+  {across:["PORNO","MUTLU","KONYA"],down:["PAMUK","RUTİN","OKUMA"]},
+  {across:["ŞEHİR","POLİS","EYLÜL"],down:["ŞÜPHE","HELAL","RESUL"]},
+  {across:["YERLİ","MUTLU","KOMŞU"],down:["YEMEK","RİTİM","İPUCU"]},
   {across:["SESLİ","DOĞRU","KORKU"],down:["SADIK","SAĞIR","İPUCU"]},
   {across:["HASTA","DOĞRU","SENDE"],down:["HADİS","SOĞAN","AŞURE"]},
-  {across:["KALEM","BAKAN","PLAKA"],down:["KEBAP","LOKMA","MANDA"]},
-  {across:["KİTAP","FORUM","SOKAK"],down:["KAFES","TARAK","PAMUK"]},
-  {across:["KAPAK","BURUN","PLAKA"],down:["KEBAP","PARÇA","KANCA"]},
-  {across:["KAVAK","BURUN","POSTA"],down:["KEBAP","VİRÜS","KANCA"]},
-  {across:["KAYAK","FORUM","SORUN"],down:["KAFES","YARAR","KEMAN"]},
-  {across:["KAZAK","FORUM","SORUN"],down:["KAFES","ZARAR","KEMAN"]},
-  {across:["KABAK","FORUM","SOKAK"],down:["KAFES","BÖREK","KEMİK"]},
-  {across:["KANAT","BEKAR","PLAKA"],down:["KEBAP","NOKTA","TARLA"]},
-  {across:["KANAL","SOKAK","PLAKA"],down:["KASAP","NOKTA","LOKMA"]},
-  {across:["KASAP","FORUM","SİNEK"],down:["KAFES","SERİN","PAMUK"]},
-  {across:["KAZAN","BÖREK","PLAKA"],down:["KEBAP","ZORBA","NOKTA"]},
-  {across:["KEBAP","FORUM","SOKAK"],down:["KAFES","BÖREK","PAMUK"]},
+  {across:["YOLCU","MUTLU","KREDİ"],down:["YEMEK","LİTRE","UMUMİ"]},
+  {across:["AŞIRI","BÖLÜM","SOKAK"],down:["ABBAS","ISLAK","IRMAK"]},
+  {across:["OLASI","TEMEL","MÜZİK"],down:["ORTAM","AÇMAZ","ISLAK"]},
+  {across:["KADRO","DOĞRU","MANGA"],down:["KADİM","DOĞAN","OKUMA"]},
+  {across:["İDRAR","AKŞAM","İÇTEN"],down:["İDARİ","REŞİT","ROMAN"]},
+  {across:["KÖYLÜ","BİLGİ","SENDE"],down:["KABUS","YALAN","ÜNİTE"]},
+  {across:["YÜZLÜ","PARTİ","ACELE"],down:["YAPMA","ZİRVE","ÜNİTE"]},
+  {across:["COŞKU","DURUM","İÇTEN"],down:["CİDDİ","ŞERİT","UZMAN"]},
+  {across:["ORASI","TEMEL","MÜZİK"],down:["ORTAM","AÇMAZ","ISLAK"]},
+  {across:["YARAR","POLİS","AŞİNA"],down:["YAPMA","RALLİ","RUSYA"]},
+  {across:["ZAFER","BEYAZ","APTAL"],down:["ZEBRA","FİYAT","REZİL"]},
+  {across:["ALICI","BÖLÜM","SOKAK"],down:["ABBAS","ISLAK","IRMAK"]},
+  {across:["YAVAŞ","YARIN","AŞAĞI"],down:["YAYLA","VURMA","ŞANLI"]},
+  {across:["CANLI","DURUM","ETNİK"],down:["CADDE","NARİN","IRMAK"]},
+  {across:["ŞOFÖR","POLİS","ACABA"],down:["ŞAPKA","FULYA","RUSYA"]},
+  {across:["REJİM","BÖLÜM","TUTAR"],down:["ROBOT","JİLET","MEMUR"]},
+  {across:["TIPKI","HIZLI","ACABA"],down:["TAHTA","PİZZA","ILICA"]},
+  {across:["ÇİZGİ","BİLGİ","KİMYA"],down:["ÇABUK","ZALİM","İTİNA"]},
+  {across:["KORKU","AKŞAM","ALTIN"],down:["KOALA","REŞİT","UZMAN"]},
+  {across:["REJİM","KOLAY","METRE"],down:["RAKAM","JİLET","MEYVE"]},
+  {across:["BARAJ","CEVAP","KANUN"],down:["BÖCEK","REVAN","JAPON"]},
+  {across:["SAYGI","HIZLI","ACABA"],down:["SAHRA","YAZMA","ILICA"]},
+  {across:["SORGU","AKŞAM","SATIN"],down:["SEANS","REŞİT","UZMAN"]},
+  {across:["EROİN","KOLAY","NAKİT"],down:["ERKEN","OĞLAK","NİYET"]},
+  {across:["BAŞLI","ÇIKTI","KALMA"],down:["BUÇUK","ŞEKİL","ILICA"]},
+  {across:["HAVUZ","KOLAY","METİN"],down:["HAKİM","VELET","ZİYAN"]},
+  {across:["PROJE","ONLAR","ALTIN"],down:["PROVA","OMLET","EKRAN"]},
+  {across:["HAVUZ","YARIN","KREDİ"],down:["HÖYÜK","VERME","ZENCİ"]},
+  {across:["SAKLI","BAĞLI","TUTMA"],down:["SABİT","KAĞIT","ILICA"]},
+  {across:["KURGU","AKŞAM","ALTIN"],down:["KOALA","REŞİT","UZMAN"]},
+  {across:["HAZIR","CEVAP","EKLER"],down:["HÜCRE","ZEVAL","RAPOR"]},
+  {across:["SAÇLI","BAĞLI","PARÇA"],down:["SEBEP","ÇIĞIR","ILICA"]},
+  {across:["ÖTÜRÜ","BÖLÜM","KÖPEK"],down:["ÖZBEK","ÜSLUP","ÜZMEK"]},
+  {across:["ÇORBA","BİLGİ","KAİDE"],down:["ÇABUK","RALLİ","ANİME"]},
+  {across:["ABONE","ONLAR","SATIN"],down:["ANONS","OMLET","EKRAN"]},
+  {across:["ISSIZ","GEÇEN","NEMLİ"],down:["ILGIN","SEÇİM","ZENCİ"]},
+  {across:["YURDU","HAZIR","TELAŞ"],down:["YAHUT","REZİL","UĞRAŞ"]},
+  {across:["TÜRLÜ","BİLGİ","KAİDE"],down:["TABAK","RALLİ","ÜNİTE"]},
+  {across:["VAPUR","DURUM","OPERA"],down:["VİDEO","PERDE","RAMPA"]},
+  {across:["ÇORLU","RESİM","AYLIK"],down:["ÇORBA","RESUL","UÇMAK"]},
+  {across:["BRONZ","ONLAR","ESNAF"],down:["BLOKE","OĞLAN","ZARİF"]},
+  {across:["TUZLU","ONLAR","İÇMEK"],down:["TEORİ","ZALİM","UĞRAK"]},
+  {across:["ÇORLU","ŞEHİR","EKMEK"],down:["ÇEŞME","RAHİM","UĞRAK"]},
+  {across:["GARAJ","CEVAP","KANUN"],down:["GICIK","REVAN","JAPON"]},
+  {across:["GÖRGÜ","BELLİ","KAİDE"],down:["GÖBEK","RALLİ","ÜNİTE"]},
+  {across:["GÜRCÜ","BELLİ","KAİDE"],down:["GÖBEK","RALLİ","ÜNİTE"]},
+  {across:["JOKER","TARİH","NİÇİN"],down:["JETON","KİREÇ","REHİN"]},
+  {across:["HAVAN","YARIN","KREDİ"],down:["HÖYÜK","VERME","NİNNİ"]},
+  {across:["ISSIZ","GÖREV","NESİL"],down:["ILGIN","STRES","ZEVAL"]},
+  {across:["GÖREV","GEÇEN","KİLİS"],down:["GUGUK","REÇEL","VENÜS"]},
+  {across:["GİREN","GEÇEN","KALBİ"],down:["GUGUK","REÇEL","NİNNİ"]},
+  {across:["ZORLU","HAZIR","İSTEK"],down:["ZİHNİ","ROZET","UĞRAK"]},
+  {across:["GİRİŞ","GEÇEN","KILLI"],down:["GUGUK","REÇEL","ŞANLI"]},
+  {across:["REJİM","SATIN","LANSE"],down:["RESUL","JETON","MONTE"]},
+  {across:["JAPON","TARİH","NAKİT"],down:["JETON","PERUK","NOHUT"]},
+  {across:["GÖRÜŞ","GEÇEN","KILLI"],down:["GUGUK","REÇEL","ŞANLI"]},
+  {across:["ISLAH","SORUN","ZİKİR"],down:["ISSIZ","LİRİK","HÜNER"]},
 ];
-
 const MAX_SWAPS = 15;
 const HOLES = new Set(["1,1","1,3","3,1","3,3"]);
 function isHole(r,c){return HOLES.has(r+","+c);}
-const STORE_KEY = "waffle-daily-v2";
-const MODE_KEY = "waffle-mode-v1";
+const STORE_KEY = "petek-progress-v1";
+const STATS_KEY = "waffle-stats-v1";
 const THEME_KEY = "waffle-theme-v1";
-const STATS_KEYS = {daily:"waffle-stats-v1", unlimited:"waffle-stats-unlim-v1"};
-const HELP_KEY = "waffle-help-hidden-v1";
+const HELP_KEY  = "waffle-help-hidden-v1";
+const DAY1 = Math.floor(Date.UTC(2026,7,1)/86400000);   // 1 Ağustos 2026 = #1
 
-const boardEl = document.getElementById('board');
-const swapNumEl = document.getElementById('swapNum');
-const swapLblEl = document.getElementById('swapLbl');
-const starPrevEl = document.getElementById('starPrev');
-const actionsEl = document.getElementById('actions');
-const hintTextEl = document.getElementById('hintText');
-const cdbarEl = document.getElementById('cdbar');
+const boardEl=document.getElementById('board');
+const swapNumEl=document.getElementById('swapNum');
+const swapLblEl=document.getElementById('swapLbl');
+const starPrevEl=document.getElementById('starPrev');
+const actionsEl=document.getElementById('actions');
+const hintTextEl=document.getElementById('hintText');
+const cdbarEl=document.getElementById('cdbar');
+const subLblEl=document.getElementById('subLbl');
 
-let mode='daily';   // daily | unlimited
-let solution, cur, swapsLeft, selected=null, curPuzzle;
-let phase='play';   // play | trying | win | gaveup | animating
-let dayIdCur=null;
-let unlimSeed=1;
+let solution, cur, swapsLeft, selected=null, curPuzzle, phase='play', dayIdCur=null, TODAY=null;
 
-/* ---------- Tema (aydınlık/karanlık) ---------- */
-const SUN_SVG='<svg width=\'22\' height=\'22\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><circle cx=\'12\' cy=\'12\' r=\'4\'/><line x1=\'12\' y1=\'2\' x2=\'12\' y2=\'4\'/><line x1=\'12\' y1=\'20\' x2=\'12\' y2=\'22\'/><line x1=\'4.2\' y1=\'4.2\' x2=\'5.6\' y2=\'5.6\'/><line x1=\'18.4\' y1=\'18.4\' x2=\'19.8\' y2=\'19.8\'/><line x1=\'2\' y1=\'12\' x2=\'4\' y2=\'12\'/><line x1=\'20\' y1=\'12\' x2=\'22\' y2=\'12\'/><line x1=\'4.2\' y1=\'19.8\' x2=\'5.6\' y2=\'18.4\'/><line x1=\'18.4\' y1=\'5.6\' x2=\'19.8\' y2=\'4.2\'/></svg>';
-const MOON_SVG='<svg width=\'20\' height=\'20\' viewBox=\'0 0 16 16\' fill=\'currentColor\'><path d=\'M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.02 3.278 7.277 7.318 7.277q.792 0 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278\'/></svg>';
-function applyTheme(t){
-  document.documentElement.classList.toggle('dark', t==='dark');
-  const btn=document.getElementById('themeBtn');
-  if(btn) btn.innerHTML = (t==='dark') ? SUN_SVG : MOON_SVG;
-}
-function toggleTheme(){
-  const nx = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
-  try{ localStorage.setItem(THEME_KEY, nx); }catch(e){}
-  applyTheme(nx);
-}
-(function initTheme(){
-  let t='light';
-  try{ t = localStorage.getItem(THEME_KEY) || 'light'; }catch(e){}
-  applyTheme(t);
-})();
+/* ---- tarih / gün ---- */
+function todayId(){ const d=new Date(); return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000); }
+function dayNo(id){ return id - DAY1 + 1; }
+function idFromNo(n){ return DAY1 + n - 1; }
+const AYLAR=['Ocak','Şubat','Mart','Nisan','Mayıs','Haziran','Temmuz','Ağustos','Eylül','Ekim','Kasım','Aralık'];
+const AYKISA=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+function trDate(id){ const d=new Date(id*86400000); return d.getUTCDate()+' '+AYLAR[d.getUTCMonth()]+' '+d.getUTCFullYear(); }
+function trDateShort(id){ const d=new Date(id*86400000); return d.getUTCDate()+' '+AYKISA[d.getUTCMonth()]+' '+d.getUTCFullYear(); }
+function msToMidnight(){ const n=new Date(); const nx=new Date(n.getFullYear(),n.getMonth(),n.getDate()+1,0,0,0,0); return nx-n; }
+function fmtHMS(ms){ let s=Math.max(0,Math.floor(ms/1000)); const h=Math.floor(s/3600); s%=3600; const m=Math.floor(s/60); s%=60; const p=x=>String(x).padStart(2,'0'); return p(h)+':'+p(m)+':'+p(s); }
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
+function isTodayView(){ return dayIdCur===todayId(); }
 
-/* ---------- Günlük mantık ---------- */
-function dayId(){
-  const d=new Date();
-  return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())/86400000);
-}
-// gösterilen bulmaca no: 1 Ocak = #1 (yılın günü)
-function dayNo(){
-  const d=new Date();
-  return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(d.getFullYear(),0,1))/86400000)+1;
-}
-function msToMidnight(){
-  const n=new Date();
-  const nx=new Date(n.getFullYear(), n.getMonth(), n.getDate()+1, 0,0,0,0);
-  return nx - n;
-}
-function fmtHMS(ms){
-  let s=Math.max(0,Math.floor(ms/1000));
-  const h=Math.floor(s/3600); s%=3600;
-  const m=Math.floor(s/60); s%=60;
-  const p=x=>String(x).padStart(2,'0');
-  return p(h)+':'+p(m)+':'+p(s);
-}
-// tohumlu RNG (mulberry32): günlük sabit karışım
-function mulberry32(a){
-  return function(){
-    a|=0; a=a+0x6D2B79F5|0;
-    let t=Math.imul(a^a>>>15, 1|a);
-    t=t+Math.imul(t^t>>>7, 61|t)^t;
-    return ((t^t>>>14)>>>0)/4294967296;
-  };
-}
+/* ---- tema ---- */
+const SUN_SVG='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/></svg>';
+const MOON_SVG='<svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.02 3.278 7.277 7.318 7.277q.792 0 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278z"/></svg>';
+function applyTheme(t){ document.documentElement.classList.toggle('dark',t==='dark'); const b=document.getElementById('themeBtn'); if(b) b.innerHTML=(t==='dark')?SUN_SVG:MOON_SVG; }
+function toggleTheme(){ const nx=document.documentElement.classList.contains('dark')?'light':'dark'; try{localStorage.setItem(THEME_KEY,nx)}catch(e){} applyTheme(nx); }
+(function(){ let t='light'; try{ t=localStorage.getItem(THEME_KEY)||'light'; }catch(e){} applyTheme(t); })();
 
-/* ---------- Grid kurulum ---------- */
-function buildSolution(p){
-  const g=Array.from({length:5},()=>Array(5).fill(null));
-  const rows=[0,2,4], cols=[0,2,4];
-  rows.forEach((r,i)=>{const w=p.across[i]; for(let c=0;c<5;c++) g[r][c]=w[c];});
-  cols.forEach((c,i)=>{const w=p.down[i]; for(let r=0;r<5;r++) g[r][c]=w[r];});
-  return g;
-}
-function activePositions(){
-  const out=[];
-  for(let r=0;r<5;r++)for(let c=0;c<5;c++) if(!isHole(r,c)) out.push([r,c]);
-  return out;
-}
-function toGrid(pos,letters){
-  const g=Array.from({length:5},()=>Array(5).fill(null));
-  pos.forEach(([r,c],k)=>g[r][c]=letters[k]);
-  return g;
-}
-function makeScrambleSeeded(sol, rnd){
-  const pos=activePositions();
-  const letters=pos.map(([r,c])=>sol[r][c]);
-  let a=letters.slice();
-  const R=13; let done=0, guard=0;
-  while(done<R && guard<600){
-    guard++;
-    const i=Math.floor(rnd()*a.length);
-    const j=Math.floor(rnd()*a.length);
-    if(i===j||a[i]===a[j]) continue;
-    [a[i],a[j]]=[a[j],a[i]]; done++;
-  }
-  if(a.every((l,k)=>l===letters[k])){
-    for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++)
-      if(a[i]!==a[j]){[a[i],a[j]]=[a[j],a[i]]; return toGrid(pos,a);}
-  }
-  return toGrid(pos,a);
-}
+/* ---- grid ---- */
+function buildSolution(p){ const g=Array.from({length:5},()=>Array(5).fill(null)); [0,2,4].forEach((r,i)=>{const w=p.across[i]; for(let c=0;c<5;c++) g[r][c]=w[c];}); [0,2,4].forEach((c,i)=>{const w=p.down[i]; for(let r=0;r<5;r++) g[r][c]=w[r];}); return g; }
+function activePositions(){ const o=[]; for(let r=0;r<5;r++)for(let c=0;c<5;c++) if(!isHole(r,c)) o.push([r,c]); return o; }
+function toGrid(pos,letters){ const g=Array.from({length:5},()=>Array(5).fill(null)); pos.forEach(([r,c],k)=>g[r][c]=letters[k]); return g; }
+function makeScrambleSeeded(sol,rnd){ const pos=activePositions(); const letters=pos.map(([r,c])=>sol[r][c]); let a=letters.slice(); let done=0,guard=0; while(done<13&&guard<600){ guard++; const i=Math.floor(rnd()*a.length),j=Math.floor(rnd()*a.length); if(i===j||a[i]===a[j])continue; [a[i],a[j]]=[a[j],a[i]]; done++; } if(a.every((l,k)=>l===letters[k])){ for(let i=0;i<a.length;i++)for(let j=i+1;j<a.length;j++) if(a[i]!==a[j]){[a[i],a[j]]=[a[j],a[i]];return toGrid(pos,a);} } return toGrid(pos,a); }
 
-/* ---------- Renklendirme ---------- */
-function colorWord(curr,sol){
-  const n=curr.length, res=Array(n).fill(0), pool={};
-  for(let i=0;i<n;i++){ if(curr[i]===sol[i]) res[i]=2; else pool[sol[i]]=(pool[sol[i]]||0)+1; }
-  for(let i=0;i<n;i++){ if(res[i]===2) continue; if(pool[curr[i]]>0){res[i]=1;pool[curr[i]]--;} }
-  return res;
-}
-function computeColors(){
-  const rank=Array.from({length:5},()=>Array(5).fill(-1));
-  [0,2,4].forEach(r=>{
-    const cc=[0,1,2,3,4].map(c=>cur[r][c]), ss=[0,1,2,3,4].map(c=>solution[r][c]);
-    const col=colorWord(cc,ss);
-    for(let c=0;c<5;c++) rank[r][c]=Math.max(rank[r][c],col[c]);
-  });
-  [0,2,4].forEach(c=>{
-    const cc=[0,1,2,3,4].map(r=>cur[r][c]), ss=[0,1,2,3,4].map(r=>solution[r][c]);
-    const col=colorWord(cc,ss);
-    for(let r=0;r<5;r++) rank[r][c]=Math.max(rank[r][c],col[r]);
-  });
-  return rank;
-}
+/* ---- renk ---- */
+function colorWord(curr,sol){ const n=curr.length,res=Array(n).fill(0),pool={}; for(let i=0;i<n;i++){ if(curr[i]===sol[i])res[i]=2; else pool[sol[i]]=(pool[sol[i]]||0)+1; } for(let i=0;i<n;i++){ if(res[i]===2)continue; if(pool[curr[i]]>0){res[i]=1;pool[curr[i]]--;} } return res; }
+function computeColors(){ const rank=Array.from({length:5},()=>Array(5).fill(-1)); [0,2,4].forEach(r=>{ const cc=[0,1,2,3,4].map(c=>cur[r][c]),ss=[0,1,2,3,4].map(c=>solution[r][c]); const col=colorWord(cc,ss); for(let c=0;c<5;c++) rank[r][c]=Math.max(rank[r][c],col[c]); }); [0,2,4].forEach(c=>{ const cc=[0,1,2,3,4].map(r=>cur[r][c]),ss=[0,1,2,3,4].map(r=>solution[r][c]); const col=colorWord(cc,ss); for(let r=0;r<5;r++) rank[r][c]=Math.max(rank[r][c],col[r]); }); return rank; }
 
-/* ---------- Render ---------- */
 function starStr(n){return '★'.repeat(n)+'☆'.repeat(5-n);}
 function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
 
-function render(){
-  const rank=computeColors();
-  boardEl.innerHTML='';
-  for(let r=0;r<5;r++)for(let c=0;c<5;c++){
-    const t=document.createElement('div');
-    if(isHole(r,c)){t.className='tile hole';boardEl.appendChild(t);continue;}
-    const rk=rank[r][c];
-    t.className='tile '+(rk===2?'green':rk===1?'yellow':'grey');
-    if(selected&&selected.r===r&&selected.c===c) t.classList.add('sel');
-    t.textContent=cur[r][c];
-    t.dataset.r=r;t.dataset.c=c;
-    t.addEventListener('click',()=>onTile(r,c));
-    boardEl.appendChild(t);
-  }
-  swapLblEl.textContent='HAMLE KALDI';
-  swapNumEl.textContent=Math.max(0,swapsLeft);
-  starPrevEl.style.visibility='';
-  starPrevEl.textContent=starStr(clamp(swapsLeft,0,5));
-}
+function render(){ const rank=computeColors(); boardEl.innerHTML=''; for(let r=0;r<5;r++)for(let c=0;c<5;c++){ const t=document.createElement('div'); if(isHole(r,c)){t.className='tile hole';boardEl.appendChild(t);continue;} const rk=rank[r][c]; t.className='tile '+(rk===2?'green':rk===1?'yellow':'grey'); if(selected&&selected.r===r&&selected.c===c) t.classList.add('sel'); t.textContent=cur[r][c]; t.dataset.r=r;t.dataset.c=c; t.addEventListener('click',()=>onTile(r,c)); boardEl.appendChild(t); } swapLblEl.textContent='HAMLE KALDI'; swapNumEl.textContent=Math.max(0,swapsLeft); starPrevEl.style.visibility=''; starPrevEl.textContent=starStr(clamp(swapsLeft,0,5)); }
 
-/* ---------- Etkileşim ---------- */
-function onTile(r,c){
-  if(phase!=='play') return;
-  if(!selected){selected={r,c};render();return;}
-  if(selected.r===r&&selected.c===c){selected=null;render();return;}
-  const a=selected;
-  const changed = cur[a.r][a.c]!==cur[r][c];
-  [cur[a.r][a.c],cur[r][c]]=[cur[r][c],cur[a.r][a.c]];
-  selected=null;
-  if(changed && phase==='play' && swapsLeft>0) swapsLeft--;
-  render();
-  if(changed){pulse(a.r,a.c);pulse(r,c);}
-  save();
-  if(isSolved()){finishWin();return;}
-  if(phase==='play' && swapsLeft<=0){ revealAndLose(); }
-}
-function pulse(r,c){
-  const el=boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`);
-  if(el){el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),300);}
-}
-function isSolved(){
-  for(let r=0;r<5;r++)for(let c=0;c<5;c++)
-    if(!isHole(r,c)&&cur[r][c]!==solution[r][c]) return false;
-  return true;
-}
+function onTile(r,c){ if(phase!=='play')return; if(!selected){selected={r,c};render();return;} if(selected.r===r&&selected.c===c){selected=null;render();return;} const a=selected; const changed=cur[a.r][a.c]!==cur[r][c]; [cur[a.r][a.c],cur[r][c]]=[cur[r][c],cur[a.r][a.c]]; selected=null; if(changed&&swapsLeft>0) swapsLeft--; render(); if(changed){pulse(a.r,a.c);pulse(r,c);} save(); if(isSolved()){finishWin();return;} if(swapsLeft<=0){revealAndLose();} }
+function pulse(r,c){ const el=boardEl.querySelector('[data-r="'+r+'"][data-c="'+c+'"]'); if(el){el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),300);} }
+function isSolved(){ for(let r=0;r<5;r++)for(let c=0;c<5;c++) if(!isHole(r,c)&&cur[r][c]!==solution[r][c]) return false; return true; }
 
-/* ---------- Hak bitince: cevabı animasyonla aç ---------- */
-function revealAndLose(){
-  phase='animating'; selected=null; render(); renderActions();
-  const wrong=activePositions().filter(([r,c])=>cur[r][c]!==solution[r][c]);
-  if(wrong.length===0){ finishLose(); return; }
-  wrong.forEach(([r,c],k)=>{
-    setTimeout(()=>{ cur[r][c]=solution[r][c]; render(); pulse(r,c); }, k*80);
-  });
-  setTimeout(finishLose, wrong.length*80 + 450);
-}
+function revealAndLose(){ phase='animating'; selected=null; render(); renderActions(); const wrong=activePositions().filter(([r,c])=>cur[r][c]!==solution[r][c]); if(!wrong.length){finishLose();return;} wrong.forEach(([r,c],k)=>{ setTimeout(()=>{ cur[r][c]=solution[r][c]; render(); pulse(r,c); }, k*80); }); setTimeout(finishLose, wrong.length*80+450); }
+function finishWin(){ phase='win'; selected=null; recordStats(dayIdCur,true,clamp(swapsLeft,0,5)); save(); showEnd(true); }
+function finishLose(){ phase='lose'; selected=null; recordStats(dayIdCur,false,0); save(); showEnd(false); }
 
-/* ---------- Bitiş ---------- */
-function finishWin(){ phase='win'; selected=null; recordStats(mode, true, clamp(swapsLeft,0,5)); save(); showEnd(true); }
-function finishLose(){ phase='lose'; selected=null; recordStats(mode, false, 0); save(); showEnd(false); }
+/* ---- ilerleme kaydı (gün -> durum) ---- */
+function loadMap(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||{}; }catch(e){ return {}; } }
+function save(){ try{ const m=loadMap(); const pos=activePositions(); m[dayIdCur]={letters:pos.map(([r,c])=>cur[r][c]),swapsLeft,phase}; localStorage.setItem(STORE_KEY,JSON.stringify(m)); }catch(e){} }
 
-function buildMini(){
-  const m=document.getElementById('miniGrid'); m.innerHTML='';
-  for(let r=0;r<5;r++)for(let c=0;c<5;c++){
-    const d=document.createElement('div');
-    if(isHole(r,c)){ d.className='mc hole'; }
-    else { d.className='mc'; d.textContent=solution[r][c]; }
-    m.appendChild(d);
-  }
-}
-function shareResult(){
-  const tag = mode==='daily' ? '#'+dayIdCur : 'Sınırsız';
-  let txt;
-  if(phase==='win'){
-    const s = '★'.repeat(clamp(swapsLeft,0,5));
-    txt = `Petek ${tag} · çözüldü (${s})`;
-  } else {
-    txt = `Petek ${tag} · bugün çözemedim`;
-  }
-  txt += '\n' + location.href;
-  const b=document.getElementById('endShare');
-  if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; }
-  try{
-    navigator.clipboard.writeText(txt);
-    const o=b.textContent; b.textContent='Kopyalandı'; setTimeout(()=>b.textContent=o,1500);
-  }catch(e){}
-}
+/* ---- istatistik (gün başına bir kez) ---- */
+function loadStats(){ let s=null; try{ s=JSON.parse(localStorage.getItem(STATS_KEY)); }catch(e){} if(!s||typeof s!=='object') s={}; s.played=s.played||0; s.wins=s.wins||0; if(!s.dist||typeof s.dist!=='object') s.dist={}; for(let k=0;k<=5;k++) s.dist[k]=s.dist[k]||0; if(!s.days||typeof s.days!=='object'){ s.days={}; if(s.lastDay!=null) s.days[s.lastDay]=true; } return s; }
+function saveStats(s){ try{ localStorage.setItem(STATS_KEY,JSON.stringify(s)); }catch(e){} }
+function recordStats(id,win,stars){ const s=loadStats(); if(s.days[id]) return; s.days[id]=true; s.played++; if(win){ s.wins++; s.dist[stars]=(s.dist[stars]||0)+1; } saveStats(s); }
+function renderStatsBlock(el,highlight){ const s=loadStats(); const wr=s.played?Math.round(s.wins/s.played*100):0; let max=1; for(let k=0;k<=5;k++) max=Math.max(max,s.dist[k]); let html='<div class="statsbox">'+'<div class="statrow"><span>Oynanan</span><b>'+s.played+'</b></div>'+'<div class="statrow"><span>Kazanma oranı</span><b>%'+wr+'</b></div>'+'<div class="dist-title">DAĞILIM</div><div class="dist">'; [5,4,3,2,1,0].forEach(k=>{ const c=s.dist[k]||0,w=Math.max(12,(c/max)*100); html+='<div class="drow"><span class="dk">'+k+' ★</span><div class="dbar"><i class="dfill'+(highlight===k?' cur':'')+'" style="width:'+w+'%">'+c+'</i></div></div>'; }); html+='</div></div>'; el.innerHTML=html; }
 
-function showEnd(win){
-  render(); renderActions(); buildMini();
-  const head=document.getElementById('endHead');
-  const st=document.getElementById('endStars');
-  const endCd=document.getElementById('endCd');
-  const tag = mode==='daily' ? '#'+dayNo() : 'SINIRSIZ';
+/* ---- alt alan / geri sayım ---- */
+function renderActions(){ actionsEl.innerHTML=''; cdbarEl.style.display='none'; if(phase==='win'||phase==='lose'){ hintTextEl.textContent = phase==='win' ? 'Bulmacayı çözdün!' : 'Cevap gösterildi.'; if(isTodayView()) cdbarEl.style.display=''; } else { hintTextEl.textContent=''; } }
+function updateCountdown(){ const t=fmtHMS(msToMidnight()); const a=document.getElementById('cdTime'); if(a)a.textContent=t; const b=document.getElementById('cdBarTime'); if(b)b.textContent=t; }
 
-  if(win){
-    head.className='rhead win';
-    head.textContent='PETEK · '+tag+' · ÇÖZÜLDÜ';
-    document.getElementById('endTitle').textContent = (swapsLeft>=5) ? 'Harika!' : 'Tebrikler!';
-  } else {
-    head.className='rhead';
-    head.textContent='PETEK · '+tag+' · HAKLAR BİTTİ';
-    document.getElementById('endTitle').textContent='Az kaldı!';
-  }
+/* ---- sonuç ekranı ---- */
+function buildMini(){ const m=document.getElementById('miniGrid'); m.innerHTML=''; for(let r=0;r<5;r++)for(let c=0;c<5;c++){ const d=document.createElement('div'); if(isHole(r,c)){d.className='mc hole';}else{d.className='mc';d.textContent=solution[r][c];} m.appendChild(d); } }
+function shareResult(){ const tag='#'+dayNo(dayIdCur); let txt; if(phase==='win'){ txt='Petek '+tag+' · çözüldü ('+('★'.repeat(clamp(swapsLeft,0,5)))+')'; } else { txt='Petek '+tag+' · bugün çözemedim'; } txt+='\n'+location.href; const b=document.getElementById('endShare'); if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; } try{ navigator.clipboard.writeText(txt); const o=b.textContent; b.textContent='Kopyalandı'; setTimeout(()=>b.textContent=o,1500); }catch(e){} }
+function showEnd(win){ render(); renderActions(); buildMini(); const head=document.getElementById('endHead'); const st=document.getElementById('endStars'); const endCd=document.getElementById('endCd'); const tag='#'+dayNo(dayIdCur); if(win){ head.className='rhead win'; head.textContent='PETEK · '+tag+' · ÇÖZÜLDÜ'; document.getElementById('endTitle').textContent=(swapsLeft>=5)?'Harika!':'Tebrikler!'; st.style.display=''; st.textContent=starStr(clamp(swapsLeft,0,5)); } else { head.className='rhead'; head.textContent='PETEK · '+tag+' · HAKLAR BİTTİ'; document.getElementById('endTitle').textContent='Az kaldı!'; st.style.display='none'; } document.getElementById('endMsg').textContent = win ? (MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS))+' hamlede çözdün.' : 'Zor bulmacaydı, herkes bazen kaçırır.'; const wbox=document.getElementById('endWords'); wbox.innerHTML=''; [...curPuzzle.across,...curPuzzle.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);}); renderStatsBlock(document.getElementById('endStatsBox'), win?clamp(swapsLeft,0,5):-1); if(isTodayView()){ endCd.style.display='flex'; updateCountdown(); } else { endCd.style.display='none'; } document.getElementById('endOverlay').classList.add('show'); }
 
-  if(win){ st.style.display=''; st.textContent=starStr(clamp(swapsLeft,0,5)); }
-  else { st.style.display='none'; }
+/* ---- arşiv ---- */
+function renderArchive(){ const list=document.getElementById('archiveList'); list.innerHTML=''; const tN=dayNo(todayId()); const m=loadMap(); for(let n=tN;n>=1;n--){ const id=idFromNo(n); const sv=m[id]; let status=''; if(sv){ if(sv.phase==='win') status=starStr(clamp(sv.swapsLeft,0,5)); else if(sv.phase==='lose') status='—'; } const row=document.createElement('button'); row.className='archrow'+(id===dayIdCur?' cur':''); row.innerHTML='<span class="an">#'+n+(n===tN?' · Bugün':'')+'</span><span class="ad">'+trDate(id)+'</span><span class="as">'+status+'</span>'; row.onclick=()=>{ document.getElementById('archiveOverlay').classList.remove('show'); loadDay(id); }; list.appendChild(row); } }
 
-  document.getElementById('endMsg').textContent = win
-    ? `${MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS)} hamlede çözdün.`
-    : 'Zor bulmacaydı, herkes bazen kaçırır. Sonraki bulmaca tertemiz bir başlangıç!';
+/* ---- gün yükle ---- */
+function loadDay(id){ dayIdCur=id; const idx=((id%PUZZLES.length)+PUZZLES.length)%PUZZLES.length; curPuzzle=PUZZLES[idx]; solution=buildSolution(curPuzzle); const m=loadMap(); const sv=m[id]; if(sv&&Array.isArray(sv.letters)&&sv.letters.length===21){ cur=toGrid(activePositions(),sv.letters); swapsLeft=(typeof sv.swapsLeft==='number')?sv.swapsLeft:MAX_SWAPS; phase=(sv.phase==='win'||sv.phase==='lose')?sv.phase:'play'; } else { cur=makeScrambleSeeded(solution, mulberry32((id*2654435761)>>>0)); swapsLeft=MAX_SWAPS; phase='play'; save(); } selected=null; subLblEl.textContent='#'+dayNo(id)+' · '+trDateShort(id); document.getElementById('endOverlay').classList.remove('show'); render(); renderActions(); if(phase==='win'||phase==='lose') showEnd(phase==='win'); }
 
-  const wbox=document.getElementById('endWords'); wbox.innerHTML='';
-  [...curPuzzle.across,...curPuzzle.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);});
-  renderStatsBlock(document.getElementById('endStatsBox'), mode, win?clamp(swapsLeft,0,5):-1);
+/* ---- saat / gün değişimi ---- */
+setInterval(()=>{ const t=todayId(); if(t!==TODAY){ const wasToday=(dayIdCur===TODAY); TODAY=t; if(wasToday){ loadDay(t); return; } } if((phase==='win'||phase==='lose')&&isTodayView()) updateCountdown(); },1000);
 
-  if(mode==='daily'){
-    endCd.style.display='flex';
-      updateCountdown();
-  } else {
-    endCd.style.display='none';
-    }
-  document.getElementById('endOverlay').classList.add('show');
-}
-
-/* ---------- Alt aksiyon alanı ---------- */
-function mkBtn(cls,txt,fn){const b=document.createElement('button');b.className='btn '+cls;b.textContent=txt;b.onclick=fn;return b;}
-
-function renderActions(){
-  actionsEl.innerHTML='';
-  cdbarEl.style.display='none';
-
-  if(mode==='unlimited'){
-    hintTextEl.textContent = phase==='win' ? 'Çözdün!' : (phase==='lose' ? 'Cevap gösterildi.' : '');
-    actionsEl.appendChild(mkBtn('primary','YENİ BULMACA',newUnlimited));
-    return;
-  }
-
-  // GÜNLÜK
-  if(phase==='win' || phase==='lose'){
-    hintTextEl.textContent = phase==='win' ? 'Bugünü bitirdin! Yarın yeni bulmaca.' : 'Cevap gösterildi. Yarın yeni bulmaca.';
-    cdbarEl.style.display='';
-  } else {
-    hintTextEl.textContent='';
-  }
-}
-
-/* ---------- Geri sayım ---------- */
-function updateCountdown(){
-  const t=fmtHMS(msToMidnight());
-  document.getElementById('cdTime').textContent=t;
-  document.getElementById('cdBarTime').textContent=t;
-}
-
-/* ---------- Kayıt ---------- */
-function save(){
-  if(mode!=='daily') return;   // sınırsız mod kaydedilmez
-  try{
-    const pos=activePositions();
-    const data={ dayId:dayIdCur, letters:pos.map(([r,c])=>cur[r][c]), swapsLeft, phase };
-    localStorage.setItem(STORE_KEY, JSON.stringify(data));
-  }catch(e){}
-}
-function load(){
-  try{ return JSON.parse(localStorage.getItem(STORE_KEY)); }catch(e){ return null; }
-}
-function saveMode(){ try{ localStorage.setItem(MODE_KEY, mode); }catch(e){} }
-function loadMode(){ try{ return localStorage.getItem(MODE_KEY); }catch(e){ return null; } }
-
-/* ---------- İstatistik (yalnızca günlük) ---------- */
-function loadStats(m){
-  let s=null; try{ s=JSON.parse(localStorage.getItem(STATS_KEYS[m])); }catch(e){}
-  if(!s||typeof s!=="object") s={};
-  s.played=s.played||0; s.wins=s.wins||0; s.lastDay=(s.lastDay===undefined?null:s.lastDay);
-  if(!s.dist||typeof s.dist!=="object") s.dist={};
-  for(let k=0;k<=5;k++) s.dist[k]=s.dist[k]||0;
-  return s;
-}
-function saveStats(m,s){ try{ localStorage.setItem(STATS_KEYS[m], JSON.stringify(s)); }catch(e){} }
-function recordStats(m, win, stars){
-  const s=loadStats(m);
-  if(m==='daily'){ if(s.lastDay===dayIdCur) return; s.lastDay=dayIdCur; } // günlük: günde bir
-  s.played++;
-  if(win){ s.wins++; s.dist[stars]=(s.dist[stars]||0)+1; }
-  saveStats(m,s);
-}
-function renderStatsBlock(el, m, highlight){
-  const s=loadStats(m);
-  const modeLbl = m==='daily' ? 'Günlük' : 'Sınırsız';
-  const distLbl = m==='daily' ? 'GÜNLÜK' : 'SINIRSIZ';
-  const wr=s.played?Math.round(s.wins/s.played*100):0;
-  let max=1; for(let k=0;k<=5;k++) max=Math.max(max,s.dist[k]);
-  let html='<div class="statsbox">'
-    +'<div class="statrow"><span>Oynanan · '+modeLbl+'</span><b>'+s.played+'</b></div>'
-    +'<div class="statrow"><span>Kazanma oranı</span><b>%'+wr+'</b></div>'
-    +'<div class="dist-title">DAĞILIM · '+distLbl+'</div><div class="dist">';
-  [5,4,3,2,1,0].forEach(k=>{
-    const c=s.dist[k]||0, w=Math.max(12,(c/max)*100);
-    html+='<div class="drow"><span class="dk">'+k+' \u2605</span><div class="dbar">'
-      +'<i class="dfill'+(highlight===k?' cur':'')+'" style="width:'+w+'%">'+c+'</i></div></div>';
-  });
-  html+='</div></div>';
-  el.innerHTML=html;
-}
-
-/* ---------- Günlük yükleme ---------- */
-function updateModeButtons(){
-  document.getElementById('modeDaily').classList.toggle('active', mode==='daily');
-  document.getElementById('modeUnlim').classList.toggle('active', mode==='unlimited');
-}
-
-function newUnlimited(){
-  mode='unlimited'; saveMode(); updateModeButtons();
-  document.getElementById('subLbl').textContent='SINIRSIZ · 5×5';
-  phase='play'; selected=null; swapsLeft=MAX_SWAPS;
-  curPuzzle=PUZZLES[Math.floor(Math.random()*PUZZLES.length)];
-  solution=buildSolution(curPuzzle);
-  unlimSeed=(unlimSeed*1103515245+12345)>>>0;
-  unlimSeed^=(Date.now()&0xffff)+Math.floor(performance.now());
-  cur=makeScrambleSeeded(solution, mulberry32(unlimSeed>>>0));
-  document.getElementById('endOverlay').classList.remove('show');
-  render(); renderActions();
-}
-
-function setMode(m){
-  if(m===mode && (m==='daily')) { /* günlüğe basınca da tazele */ }
-  mode=m; saveMode(); updateModeButtons();
-  document.getElementById('endOverlay').classList.remove('show');
-  if(m==='daily') loadDaily(); else newUnlimited();
-}
-
-function loadDaily(){
-  mode='daily'; updateModeButtons();
-  dayIdCur=dayId();
-  const idx = ((dayIdCur % PUZZLES.length)+PUZZLES.length)%PUZZLES.length;
-  curPuzzle=PUZZLES[idx];
-  solution=buildSolution(curPuzzle);
-  document.getElementById('subLbl').textContent='GÜNLÜK · #'+dayNo();
-
-  const saved=load();
-  if(saved && saved.dayId===dayIdCur && Array.isArray(saved.letters) && saved.letters.length===21){
-    cur=toGrid(activePositions(), saved.letters);
-    swapsLeft=(typeof saved.swapsLeft==='number')?saved.swapsLeft:MAX_SWAPS;
-    phase=(saved.phase==='win'||saved.phase==='lose')?saved.phase:'play';
-  } else {
-    cur=makeScrambleSeeded(solution, mulberry32((dayIdCur*2654435761)>>>0));
-    swapsLeft=MAX_SWAPS; phase='play';
-    save();
-  }
-
-  selected=null;
-  document.getElementById('endOverlay').classList.remove('show');
-  render(); renderActions();
-
-  if(phase==='win' || phase==='lose'){ showEnd(phase==='win'); }
-}
-
-/* ---------- Saat / gün değişimi ---------- */
-setInterval(()=>{
-  if(mode!=='daily') return;
-  if(dayId()!==dayIdCur){ loadDaily(); return; }
-  if(phase==='win' || phase==='lose') updateCountdown();
-}, 1000);
-
-/* ---------- Olaylar ---------- */
-document.getElementById('endClose').addEventListener('click',()=>{
-  document.getElementById('endOverlay').classList.remove('show');
-});
-document.getElementById('endTry').addEventListener('click',newUnlimited);
+/* ---- olaylar ---- */
+document.getElementById('endClose').addEventListener('click',()=>document.getElementById('endOverlay').classList.remove('show'));
 document.getElementById('endShare').addEventListener('click',shareResult);
-document.getElementById('modeDaily').addEventListener('click',()=>setMode('daily'));
-document.getElementById('modeUnlim').addEventListener('click',()=>setMode('unlimited'));
-document.getElementById('themeBtn').addEventListener('click',toggleTheme);
-document.getElementById('cdBtn').addEventListener('click',()=>{
-  renderStatsBlock(document.getElementById('soloStatsBox'), mode, -1);
-  document.getElementById('statsOverlay').classList.add('show');
-});
+document.getElementById('cdBtn').addEventListener('click',()=>{ renderStatsBlock(document.getElementById('soloStatsBox'),-1); document.getElementById('statsOverlay').classList.add('show'); });
 document.getElementById('statsClose').addEventListener('click',()=>document.getElementById('statsOverlay').classList.remove('show'));
+document.getElementById('archiveBtn').addEventListener('click',()=>{ renderArchive(); document.getElementById('archiveOverlay').classList.add('show'); });
+document.getElementById('archiveClose').addEventListener('click',()=>document.getElementById('archiveOverlay').classList.remove('show'));
+document.getElementById('themeBtn').addEventListener('click',toggleTheme);
 document.getElementById('helpBtn').addEventListener('click',()=>{ document.getElementById('dontShowRow').style.display='none'; document.getElementById('helpOverlay').classList.add('show'); });
 document.getElementById('helpClose').addEventListener('click',()=>document.getElementById('helpOverlay').classList.remove('show'));
-document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
-  if(e.target===o) o.classList.remove('show');
-}));
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('show'); }));
 
-mode = (loadMode()==='unlimited') ? 'unlimited' : 'daily';
-updateModeButtons();
-if(mode==='unlimited') newUnlimited(); else loadDaily();
-
-/* ---------- Nasıl oynanır: girişte popup ---------- */
+/* ---- yardım popup ---- */
 function helpHidden(){ try{ return localStorage.getItem(HELP_KEY)==='1'; }catch(e){ return false; } }
-function syncHelpCheckbox(){ const cb=document.getElementById('helpDontShow'); if(cb) cb.checked=helpHidden(); }
-document.getElementById('helpDontShow').addEventListener('change',e=>{
-  try{ if(e.target.checked) localStorage.setItem(HELP_KEY,'1'); else localStorage.removeItem(HELP_KEY); }catch(err){}
-});
-syncHelpCheckbox();
-if(!helpHidden()){ document.getElementById('dontShowRow').style.display='flex'; document.getElementById('helpOverlay').classList.add('show'); }
+document.getElementById('helpDontShow').addEventListener('change',e=>{ try{ if(e.target.checked) localStorage.setItem(HELP_KEY,'1'); else localStorage.removeItem(HELP_KEY); }catch(err){} });
+
+/* ---- başlat ---- */
+TODAY=todayId();
+loadDay(TODAY);
+if(!helpHidden()){ document.getElementById('helpDontShow').checked=false; document.getElementById('dontShowRow').style.display='flex'; document.getElementById('helpOverlay').classList.add('show'); }
+
 </script>
 </body>
 </html>
