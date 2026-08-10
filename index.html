@@ -131,6 +131,8 @@
   .modal ul{text-align:left;margin:10px 0;padding-left:18px;color:var(--muted);line-height:1.7;font-size:14px}
   .modal .legend{display:flex;gap:14px;justify-content:center;margin:12px 0;font-size:13px;color:var(--muted)}
   .modal .legend b{display:inline-block;width:16px;height:16px;border-radius:5px;vertical-align:-3px;margin-right:5px}
+  .dontshow{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--muted);margin:12px 0 4px;cursor:pointer;user-select:none}
+  .dontshow input{width:16px;height:16px;cursor:pointer;accent-color:var(--amber-dark)}
   .modal .cd{margin:14px 0 4px}
   .modal .cd .lbl{font-size:12px;letter-spacing:2px;color:var(--muted);font-weight:700}
   .modal .cd .t{font-size:32px;font-weight:900;color:var(--amber-dark);font-variant-numeric:tabular-nums}
@@ -248,6 +250,7 @@
         <div><b style="background:var(--grey)"></b>Yok</div>
       </div>
       <p style="margin-top:12px"><b>İpucu:</b> Köşe ve ortadaki karolar hem bir <b>yatay</b> hem de bir <b>dikey</b> kelimeye aittir. Böyle bir karo <b>sarı</b> olduğunda; harfin yatay kelimede mi, dikey kelimede mi, yoksa <b>ikisinde birden</b> mi olması gerektiğini kesin bilemezsin. Sarı, iki kelimeyi de kapsar.</p>
+      <label class="dontshow"><input type="checkbox" id="helpDontShow"> Bir daha gösterme</label>
       <button class="btn primary" id="helpClose">ANLADIM</button>
     </div>
   </div>
@@ -325,6 +328,7 @@ const STORE_KEY = "waffle-daily-v2";
 const MODE_KEY = "waffle-mode-v1";
 const THEME_KEY = "waffle-theme-v1";
 const STATS_KEY = "waffle-stats-v1";
+const HELP_KEY = "waffle-help-hidden-v1";
 
 const boardEl = document.getElementById('board');
 const swapNumEl = document.getElementById('swapNum');
@@ -730,7 +734,7 @@ document.getElementById('cdBtn').addEventListener('click',()=>{
   document.getElementById('statsOverlay').classList.add('show');
 });
 document.getElementById('statsClose').addEventListener('click',()=>document.getElementById('statsOverlay').classList.remove('show'));
-document.getElementById('helpBtn').addEventListener('click',()=>document.getElementById('helpOverlay').classList.add('show'));
+document.getElementById('helpBtn').addEventListener('click',()=>{ syncHelpCheckbox(); document.getElementById('helpOverlay').classList.add('show'); });
 document.getElementById('helpClose').addEventListener('click',()=>document.getElementById('helpOverlay').classList.remove('show'));
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
   if(e.target===o) o.classList.remove('show');
@@ -739,6 +743,15 @@ document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
 mode = (loadMode()==='unlimited') ? 'unlimited' : 'daily';
 updateModeButtons();
 if(mode==='unlimited') newUnlimited(); else loadDaily();
+
+/* ---------- Nasıl oynanır: girişte popup ---------- */
+function helpHidden(){ try{ return localStorage.getItem(HELP_KEY)==='1'; }catch(e){ return false; } }
+function syncHelpCheckbox(){ const cb=document.getElementById('helpDontShow'); if(cb) cb.checked=helpHidden(); }
+document.getElementById('helpDontShow').addEventListener('change',e=>{
+  try{ if(e.target.checked) localStorage.setItem(HELP_KEY,'1'); else localStorage.removeItem(HELP_KEY); }catch(err){}
+});
+syncHelpCheckbox();
+if(!helpHidden()) document.getElementById('helpOverlay').classList.add('show');
 </script>
 </body>
 </html>
