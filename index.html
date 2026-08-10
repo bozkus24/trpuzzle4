@@ -252,7 +252,7 @@
         <div><b style="background:var(--grey)"></b>Yok</div>
       </div>
       <p style="margin-top:12px"><b>İpucu:</b> Köşe ve ortadaki karolar hem bir <b>yatay</b> hem de bir <b>dikey</b> kelimeye aittir. Böyle bir karo <b>sarı</b> olduğunda; harfin yatay kelimede mi, dikey kelimede mi, yoksa <b>ikisinde birden</b> mi olması gerektiğini kesin bilemezsin. Sarı, iki kelimeyi de kapsar.</p>
-      <label class="dontshow"><input type="checkbox" id="helpDontShow"> Bir daha gösterme</label>
+      <label class="dontshow" id="dontShowRow"><input type="checkbox" id="helpDontShow"> Bir daha gösterme</label>
       <button class="btn primary" id="helpClose">ANLADIM</button>
     </div>
   </div>
@@ -736,7 +736,7 @@ document.getElementById('cdBtn').addEventListener('click',()=>{
   document.getElementById('statsOverlay').classList.add('show');
 });
 document.getElementById('statsClose').addEventListener('click',()=>document.getElementById('statsOverlay').classList.remove('show'));
-document.getElementById('helpBtn').addEventListener('click',()=>{ syncHelpCheckbox(); document.getElementById('helpOverlay').classList.add('show'); });
+document.getElementById('helpBtn').addEventListener('click',()=>{ document.getElementById('dontShowRow').style.display='none'; document.getElementById('helpOverlay').classList.add('show'); });
 document.getElementById('helpClose').addEventListener('click',()=>document.getElementById('helpOverlay').classList.remove('show'));
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{
   if(e.target===o) o.classList.remove('show');
@@ -753,7 +753,7 @@ document.getElementById('helpDontShow').addEventListener('change',e=>{
   try{ if(e.target.checked) localStorage.setItem(HELP_KEY,'1'); else localStorage.removeItem(HELP_KEY); }catch(err){}
 });
 syncHelpCheckbox();
-if(!helpHidden()) document.getElementById('helpOverlay').classList.add('show');
+if(!helpHidden()){ document.getElementById('dontShowRow').style.display='flex'; document.getElementById('helpOverlay').classList.add('show'); }
 </script>
 </body>
 </html>
