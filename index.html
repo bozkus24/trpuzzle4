@@ -105,6 +105,10 @@
   .tile.hole{background:transparent;box-shadow:none;cursor:default;pointer-events:none}
   .tile.sel{transform:translateY(-4px) scale(1.06);box-shadow:0 8px 0 rgba(0,0,0,.12),0 0 0 4px var(--amber);z-index:2}
   .tile.pulse{animation:pop .28s ease}
+  .tile,#board{touch-action:none}
+  .tile.dragsrc{opacity:.28}
+  .tile.drop{box-shadow:0 0 0 4px var(--ink),0 4px 0 rgba(0,0,0,.10);z-index:2}
+  .dragclone{position:fixed;z-index:100;pointer-events:none;border-radius:12px;box-shadow:0 14px 26px rgba(0,0,0,.35);transform:scale(1.08);display:flex;align-items:center;justify-content:center;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.18)}
   @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 
   .hint{max-width:440px;text-align:center;font-size:13px;color:var(--muted);margin:10px 6px 0;line-height:1.5;min-height:20px}
@@ -435,6 +439,7 @@ const cdbarEl=document.getElementById('cdbar');
 const subLblEl=document.getElementById('subLbl');
 
 let solution, cur, swapsLeft, selected=null, curPuzzle, phase='play', dayIdCur=null, TODAY=null;
+let dragStart=null, dragging=false, dragCloneEl=null, dcw=0, dch=0, dropCell=null;
 
 /* ---- tarih / gün ---- */
 function todayId(){ const d=new Date(); return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/86400000); }
@@ -469,9 +474,21 @@ function computeColors(){ const rank=Array.from({length:5},()=>Array(5).fill(-1)
 function starStr(n){return '★'.repeat(n)+'☆'.repeat(5-n);}
 function clamp(x,a,b){return Math.max(a,Math.min(b,x));}
 
-function render(){ const rank=computeColors(); boardEl.innerHTML=''; for(let r=0;r<5;r++)for(let c=0;c<5;c++){ const t=document.createElement('div'); if(isHole(r,c)){t.className='tile hole';boardEl.appendChild(t);continue;} const rk=rank[r][c]; t.className='tile '+(rk===2?'green':rk===1?'yellow':'grey'); if(selected&&selected.r===r&&selected.c===c) t.classList.add('sel'); t.textContent=cur[r][c]; t.dataset.r=r;t.dataset.c=c; t.addEventListener('click',()=>onTile(r,c)); boardEl.appendChild(t); } swapLblEl.textContent='HAMLE KALDI'; swapNumEl.textContent=Math.max(0,swapsLeft); starPrevEl.style.visibility=''; starPrevEl.textContent=starStr(clamp(swapsLeft,0,5)); }
+function render(){ const rank=computeColors(); boardEl.innerHTML=''; for(let r=0;r<5;r++)for(let c=0;c<5;c++){ const t=document.createElement('div'); if(isHole(r,c)){t.className='tile hole';boardEl.appendChild(t);continue;} const rk=rank[r][c]; t.className='tile '+(rk===2?'green':rk===1?'yellow':'grey'); if(selected&&selected.r===r&&selected.c===c) t.classList.add('sel'); t.textContent=cur[r][c]; t.dataset.r=r;t.dataset.c=c; t.addEventListener('pointerdown',(e)=>onPointerDown(e,r,c)); boardEl.appendChild(t); } swapLblEl.textContent='HAMLE KALDI'; swapNumEl.textContent=Math.max(0,swapsLeft); starPrevEl.style.visibility=''; starPrevEl.textContent=starStr(clamp(swapsLeft,0,5)); }
 
-function onTile(r,c){ if(phase!=='play')return; if(!selected){selected={r,c};render();return;} if(selected.r===r&&selected.c===c){selected=null;render();return;} const a=selected; const changed=cur[a.r][a.c]!==cur[r][c]; [cur[a.r][a.c],cur[r][c]]=[cur[r][c],cur[a.r][a.c]]; selected=null; if(changed&&swapsLeft>0) swapsLeft--; render(); if(changed){pulse(a.r,a.c);pulse(r,c);} save(); if(isSolved()){finishWin();return;} if(swapsLeft<=0){revealAndLose();} }
+function onTile(r,c){ if(phase!=='play')return; if(!selected){selected={r,c};render();return;} if(selected.r===r&&selected.c===c){selected=null;render();return;} const a=selected; selected=null; doSwap(a.r,a.c,r,c); }
+function doSwap(ar,ac,br,bc){ const changed=cur[ar][ac]!==cur[br][bc]; [cur[ar][ac],cur[br][bc]]=[cur[br][bc],cur[ar][ac]]; if(changed&&swapsLeft>0) swapsLeft--; render(); if(changed){pulse(ar,ac);pulse(br,bc);} save(); if(isSolved()){finishWin();return;} if(swapsLeft<=0){revealAndLose();} }
+
+/* ---- tut & sürükle (mouse + dokunmatik) ---- */
+function tileAt(x,y){ const el=document.elementFromPoint(x,y); if(!el)return null; const t=el.closest('.tile'); if(!t||t.classList.contains('hole')||t.classList.contains('dragclone')||t.dataset.r===undefined) return null; return {r:+t.dataset.r,c:+t.dataset.c}; }
+function clearDrop(){ if(dropCell){ const el=boardEl.querySelector('[data-r="'+dropCell.r+'"][data-c="'+dropCell.c+'"]'); if(el) el.classList.remove('drop'); dropCell=null; } }
+function beginDrag(){ dragging=true; selected=null; const el=boardEl.querySelector('[data-r="'+dragStart.r+'"][data-c="'+dragStart.c+'"]'); if(!el){dragging=false;return;} const rect=el.getBoundingClientRect(); dcw=rect.width; dch=rect.height; dragCloneEl=el.cloneNode(true); dragCloneEl.classList.add('dragclone'); dragCloneEl.style.width=dcw+'px'; dragCloneEl.style.height=dch+'px'; document.body.appendChild(dragCloneEl); el.classList.add('dragsrc'); }
+function moveClone(x,y){ if(dragCloneEl){ dragCloneEl.style.left=(x-dcw/2)+'px'; dragCloneEl.style.top=(y-dch/2)+'px'; } }
+function highlightTarget(x,y){ clearDrop(); const t=tileAt(x,y); if(t && !(t.r===dragStart.r&&t.c===dragStart.c)){ const el=boardEl.querySelector('[data-r="'+t.r+'"][data-c="'+t.c+'"]'); if(el){ el.classList.add('drop'); dropCell={r:t.r,c:t.c}; } } }
+function endDrag(){ if(dragCloneEl){ dragCloneEl.remove(); dragCloneEl=null; } clearDrop(); dragging=false; }
+function onPointerDown(e,r,c){ if(phase!=='play')return; if(e.button!==undefined && e.button!==0) return; e.preventDefault(); dragStart={r,c,x:e.clientX,y:e.clientY}; dragging=false; }
+function onPointerMove(e){ if(!dragStart)return; if(!dragging){ const dx=e.clientX-dragStart.x, dy=e.clientY-dragStart.y; if(dx*dx+dy*dy<49) return; beginDrag(); if(!dragging) return; } moveClone(e.clientX,e.clientY); highlightTarget(e.clientX,e.clientY); }
+function onPointerUp(e){ if(!dragStart)return; if(dragging){ const t=tileAt(e.clientX,e.clientY); const src=dragStart; endDrag(); if(t && !(t.r===src.r&&t.c===src.c)){ selected=null; doSwap(src.r,src.c,t.r,t.c); } else { render(); } } else { onTile(dragStart.r,dragStart.c); } dragStart=null; dragging=false; }
 function pulse(r,c){ const el=boardEl.querySelector('[data-r="'+r+'"][data-c="'+c+'"]'); if(el){el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),300);} }
 function isSolved(){ for(let r=0;r<5;r++)for(let c=0;c<5;c++) if(!isHole(r,c)&&cur[r][c]!==solution[r][c]) return false; return true; }
 
@@ -515,6 +532,9 @@ document.getElementById('statsClose').addEventListener('click',()=>document.getE
 document.getElementById('archiveBtn').addEventListener('click',()=>{ renderArchive(); document.getElementById('archiveOverlay').classList.add('show'); });
 document.getElementById('archiveClose').addEventListener('click',()=>document.getElementById('archiveOverlay').classList.remove('show'));
 document.getElementById('themeBtn').addEventListener('click',toggleTheme);
+document.addEventListener('pointermove',onPointerMove,{passive:false});
+document.addEventListener('pointerup',onPointerUp);
+document.addEventListener('pointercancel',()=>{ if(dragging) endDrag(); dragStart=null; dragging=false; });
 document.getElementById('helpBtn').addEventListener('click',()=>{ document.getElementById('dontShowRow').style.display='none'; document.getElementById('helpOverlay').classList.add('show'); });
 document.getElementById('helpClose').addEventListener('click',()=>document.getElementById('helpOverlay').classList.remove('show'));
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('show'); }));
