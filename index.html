@@ -51,6 +51,7 @@
     --rwin:#7bbf6f;
     --strip-brd:#2e2f33;
   }
+  :root.cb{ --green:#e07b39; --yellow:#2f80c9; }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;height:100%}
   body{
@@ -68,6 +69,10 @@
   .brandwrap{display:flex;align-items:center;gap:9px;flex-shrink:0}
   .ptitle{margin:0;font-size:22px;font-weight:900;letter-spacing:2px;color:var(--amber-dark);line-height:1}
   .subline{text-align:center;font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;margin-top:12px}
+  .setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 2px;font-size:15px;color:var(--ink);font-weight:700}
+  .seg{display:flex;background:var(--card);border:1px solid var(--card-brd);border-radius:12px;padding:3px;gap:3px}
+  .segbtn{border:none;background:transparent;color:var(--muted);font-weight:800;font-size:13px;padding:8px 15px;border-radius:9px;cursor:pointer;font-family:inherit}
+  .segbtn.active{background:var(--amber-dark);color:var(--page-bg)}
   .logo-img{height:34px;width:auto;display:block}
   .topbar .iconbtn{background:transparent;box-shadow:none;border:1px solid transparent;width:38px;height:38px}
   .topbar .iconbtn:active{background:var(--card-brd)}
@@ -187,7 +192,7 @@
       <button class="iconbtn" id="archiveBtn" title="Arşiv"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg></button>
       <button class="iconbtn" id="cdBtn" title="İstatistikler"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="20" x2="5" y2="13"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="19" y1="20" x2="19" y2="9"/></svg></button>
       <button class="iconbtn" id="helpBtn" title="Nasıl oynanır">?</button>
-      <button class="iconbtn" id="themeBtn" title="Aydınlık / Karanlık mod"></button>
+      <button class="iconbtn" id="settingsBtn" title="Ayarlar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
     </div>
    </div>
   </header>
@@ -242,6 +247,26 @@
       <h2>İstatistikler</h2>
       <div id="soloStatsBox"></div>
       <button class="btn ghost" id="statsClose" style="margin-top:14px">KAPAT</button>
+    </div>
+  </div>
+
+  <!-- Ayarlar -->
+  <div class="overlay" id="settingsOverlay">
+    <div class="modal">
+      <h2>Ayarlar</h2>
+      <div class="setrow"><span>Tema</span>
+        <div class="seg" id="themeSeg">
+          <button class="segbtn" data-theme="light">Aydınlık</button>
+          <button class="segbtn" data-theme="dark">Karanlık</button>
+        </div>
+      </div>
+      <div class="setrow"><span>Renk körü modu</span>
+        <div class="seg" id="cbSeg">
+          <button class="segbtn" data-cb="0">Kapalı</button>
+          <button class="segbtn" data-cb="1">Açık</button>
+        </div>
+      </div>
+      <button class="btn ghost" id="settingsClose" style="margin-top:8px">KAPAT</button>
     </div>
   </div>
 
@@ -455,11 +480,12 @@ function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.im
 function isTodayView(){ return dayIdCur===todayId(); }
 
 /* ---- tema ---- */
-const SUN_SVG='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="18.4" y1="18.4" x2="19.8" y2="19.8"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="4.2" y1="19.8" x2="5.6" y2="18.4"/><line x1="18.4" y1="5.6" x2="19.8" y2="4.2"/></svg>';
-const MOON_SVG='<svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor"><path d="M6 .278a.77.77 0 0 1 .08.858 7.2 7.2 0 0 0-.878 3.46c0 4.02 3.278 7.277 7.318 7.277q.792 0 1.533-.16a.79.79 0 0 1 .81.316.73.73 0 0 1-.031.893A8.35 8.35 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.75.75 0 0 1 6 .278z"/></svg>';
-function applyTheme(t){ document.documentElement.classList.toggle('dark',t==='dark'); const b=document.getElementById('themeBtn'); if(b) b.innerHTML=(t==='dark')?SUN_SVG:MOON_SVG; }
-function toggleTheme(){ const nx=document.documentElement.classList.contains('dark')?'light':'dark'; try{localStorage.setItem(THEME_KEY,nx)}catch(e){} applyTheme(nx); }
-(function(){ let t='light'; try{ t=localStorage.getItem(THEME_KEY)||'light'; }catch(e){} applyTheme(t); })();
+const CB_KEY="petek-cb-v1";
+function applyTheme(t){ document.documentElement.classList.toggle('dark',t==='dark'); const seg=document.getElementById('themeSeg'); if(seg) seg.querySelectorAll('.segbtn').forEach(x=>x.classList.toggle('active',x.dataset.theme===t)); }
+function setTheme(t){ try{localStorage.setItem(THEME_KEY,t)}catch(e){} applyTheme(t); }
+function applyCB(on){ document.documentElement.classList.toggle('cb',!!on); const seg=document.getElementById('cbSeg'); if(seg) seg.querySelectorAll('.segbtn').forEach(x=>x.classList.toggle('active',(x.dataset.cb==='1')===!!on)); }
+function setCB(on){ try{localStorage.setItem(CB_KEY,on?'1':'0')}catch(e){} applyCB(on); }
+(function(){ let t='light'; try{ t=localStorage.getItem(THEME_KEY)||'light'; }catch(e){} applyTheme(t); let c='0'; try{ c=localStorage.getItem(CB_KEY)||'0'; }catch(e){} applyCB(c==='1'); })();
 
 /* ---- grid ---- */
 function buildSolution(p){ const g=Array.from({length:5},()=>Array(5).fill(null)); [0,2,4].forEach((r,i)=>{const w=p.across[i]; for(let c=0;c<5;c++) g[r][c]=w[c];}); [0,2,4].forEach((c,i)=>{const w=p.down[i]; for(let r=0;r<5;r++) g[r][c]=w[r];}); return g; }
@@ -531,7 +557,10 @@ document.getElementById('cdBtn').addEventListener('click',()=>{ renderStatsBlock
 document.getElementById('statsClose').addEventListener('click',()=>document.getElementById('statsOverlay').classList.remove('show'));
 document.getElementById('archiveBtn').addEventListener('click',()=>{ renderArchive(); document.getElementById('archiveOverlay').classList.add('show'); });
 document.getElementById('archiveClose').addEventListener('click',()=>document.getElementById('archiveOverlay').classList.remove('show'));
-document.getElementById('themeBtn').addEventListener('click',toggleTheme);
+document.getElementById('settingsBtn').addEventListener('click',()=>document.getElementById('settingsOverlay').classList.add('show'));
+document.getElementById('settingsClose').addEventListener('click',()=>document.getElementById('settingsOverlay').classList.remove('show'));
+document.getElementById('themeSeg').addEventListener('click',e=>{ const b=e.target.closest('.segbtn'); if(b) setTheme(b.dataset.theme); });
+document.getElementById('cbSeg').addEventListener('click',e=>{ const b=e.target.closest('.segbtn'); if(b) setCB(b.dataset.cb==='1'); });
 document.addEventListener('pointermove',onPointerMove,{passive:false});
 document.addEventListener('pointerup',onPointerUp);
 document.addEventListener('pointercancel',()=>{ if(dragging) endDrag(); dragStart=null; dragging=false; });
