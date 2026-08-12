@@ -554,7 +554,10 @@ setInterval(()=>{ const t=todayId(); if(t!==TODAY){ const wasToday=(dayIdCur===T
 /* ---- olaylar ---- */
 document.getElementById('endClose').addEventListener('click',()=>document.getElementById('endOverlay').classList.remove('show'));
 document.getElementById('endShare').addEventListener('click',shareResult);
-document.getElementById('cdBtn').addEventListener('click',()=>{ renderStatsBlock(document.getElementById('soloStatsBox'),-1); document.getElementById('statsOverlay').classList.add('show'); });
+document.getElementById('cdBtn').addEventListener('click',()=>{
+  if(phase==='win'||phase==='lose'){ showEnd(phase==='win'); }   // bitmişse: paylaşma ekranı + altta genel istatistik
+  else { renderStatsBlock(document.getElementById('soloStatsBox'),-1); document.getElementById('statsOverlay').classList.add('show'); }
+});
 document.getElementById('statsClose').addEventListener('click',()=>document.getElementById('statsOverlay').classList.remove('show'));
 document.getElementById('archiveBtn').addEventListener('click',()=>{ renderArchive(); document.getElementById('archiveOverlay').classList.add('show'); });
 document.getElementById('archiveClose').addEventListener('click',()=>document.getElementById('archiveOverlay').classList.remove('show'));
