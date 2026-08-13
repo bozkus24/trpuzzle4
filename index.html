@@ -204,12 +204,12 @@
   .archlist{max-height:52vh;overflow-y:auto;margin:6px 0 2px;text-align:left;scrollbar-width:thin;scrollbar-color:var(--card-brd) transparent}
   .archlist::-webkit-scrollbar{width:6px}
   .archlist::-webkit-scrollbar-thumb{background:var(--card-brd);border-radius:6px}
-  .archrow{width:100%;display:flex;align-items:center;gap:8px;background:transparent;border:none;border-bottom:1px solid var(--strip-brd);padding:11px 6px;cursor:pointer;color:var(--ink);font-family:inherit}
+  .archrow{position:relative;width:100%;display:flex;align-items:center;gap:8px;background:transparent;border:none;border-bottom:1px solid var(--strip-brd);padding:11px 6px;cursor:pointer;color:var(--ink);font-family:inherit}
   .archrow:active{background:var(--card-brd)}
   .archrow.cur{background:var(--card-brd);border-radius:8px}
   .archrow .an{font-weight:800;font-size:14px;min-width:48px;text-align:left}
-  .archrow .ad{flex:1;font-size:12px;color:var(--muted);text-align:center}
-  .archrow .as{display:inline-flex;gap:2px;align-items:center;justify-content:flex-end;font-size:12px;color:var(--muted);min-width:48px}
+  .archrow .ad{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:12px;color:var(--muted);text-align:center;white-space:nowrap}
+  .archrow .as{display:inline-flex;gap:2px;align-items:center;justify-content:flex-end;font-size:12px;color:var(--muted);min-width:48px;margin-left:auto;margin-right:10px}
 </style>
 </head>
 <body>
