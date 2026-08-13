@@ -161,6 +161,9 @@
   .modal .words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
   .modal .words span{background:var(--chip-bg);color:var(--chip-ink);font-weight:800;padding:4px 10px;border-radius:8px;font-size:13px;letter-spacing:1px}
   .modal ul{text-align:left;margin:10px 0;padding-left:18px;color:var(--muted);line-height:1.7;font-size:14px}
+  .modal .hnote{text-align:left;margin:6px 0 12px;padding:9px 12px;background:var(--chip-bg);border-left:3px solid var(--accent);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.55}
+  .modal .hnote b{color:var(--ink)}
+  .modal .hnote .bkl-mini{vertical-align:-3px;margin:0 1px}
   .modal .legend{display:flex;gap:14px;justify-content:center;margin:12px 0;font-size:13px;color:var(--muted)}
   .modal .legend b{display:inline-block;width:16px;height:16px;border-radius:5px;vertical-align:-3px;margin-right:5px}
   .dontshow{display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;color:var(--muted);margin:12px 0 4px;cursor:pointer;user-select:none}
@@ -304,19 +307,19 @@
   <div class="overlay" id="helpOverlay">
     <div class="modal">
       <h2>Nasıl Oynanır</h2>
-      <p><b>Günlük bulmaca:</b> Her gün yeni, gece 00:00'da yenilenir. 3 yatay + 3 dikey, toplam <b>6 Türkçe kelime</b> var.</p>
-      <ul>
-        <li>Bir karoya dokun, sonra başka bir karoya dokununca harfler yer değiştirir.</li>
-        <li><b>15 hamle</b> hakkın var. Ne kadar az kullanırsan o kadar çok <span class="bkl-mini"></span>.</li>
-        <li>Hakkın biterse cevap gösterilir; yarın yeni bulmaca!</li>
-        <li><b>Arşiv:</b> geçmiş günlerin bulmacalarını da oynayabilirsin.</li>
-      </ul>
+      <p>Bir karoya dokunduktan sonra başka bir karoya dokunduğunda, o karolarda bulunan harfler yer değiştirir.</p>
+      <div class="hnote"><b>Not:</b> Yer değiştirmeyi, bir karoya basılı tutup başka bir karoya sürükleyip bırakarak da yapabilirsin.</div>
+      <p>15 hamle hakkın var ve son 5 hamlen kaç puan aldığını belirler.</p>
+      <div class="hnote"><b>Puanlandırma:</b> 5 veya daha fazla hamle kala bitirirsen <span class="bkl-mini"></span><span class="bkl-mini"></span><span class="bkl-mini"></span><span class="bkl-mini"></span><span class="bkl-mini"></span> kazanırsın. Daha az hamle kala bitirirsen, kaç hamle hakkın kaldıysa o kadar <span class="bkl-mini"></span> kazanırsın.</div>
       <div class="legend">
         <div><b style="background:var(--green)"></b>Doğru yer</div>
         <div><b style="background:var(--yellow)"></b>Yanlış yer</div>
         <div><b style="background:var(--grey)"></b>Yok</div>
       </div>
-      <p style="margin-top:12px"><b>İpucu:</b> Köşe ve ortadaki karolar hem bir <b>yatay</b> hem de bir <b>dikey</b> kelimeye aittir. Böyle bir karo <b>sarı</b> olduğunda; harfin yatay kelimede mi, dikey kelimede mi, yoksa <b>ikisinde birden</b> mi olması gerektiğini kesin bilemezsin. Sarı, iki kelimeyi de kapsar.</p>
+      <p><b>Günlük bulmaca:</b> Her gün Türkiye saatiyle 00.00'da yenilenir. 3 yatay ve 3 dikey kelime vardır.</p>
+      <p><b>Arşiv:</b> Geçmiş günlerin bulmacalarını buradan oynayabilirsin.</p>
+      <div class="hnote"><b>Not:</b> Burada oynadığın günler istatistiğe işlenmez.</div>
+      <p style="margin-top:12px"><b>İpucu:</b> Köşelerdeki karolar ve ortadaki karo, hem bir yatay hem de bir dikey kelimeye aittir. Bu karolarda sarı renk görürsen; harfin yatay kelimede mi, dikey kelimede mi, yoksa ikisinde birden mi olması gerektiğinden emin olamazsın.</p>
       <label class="dontshow" id="dontShowRow"><input type="checkbox" id="helpDontShow"> Bir daha gösterme</label>
       <button class="btn primary" id="helpClose">ANLADIM</button>
     </div>
