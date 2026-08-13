@@ -153,7 +153,7 @@
 
   .overlay{position:fixed;inset:0;background:var(--overlay);backdrop-filter:blur(3px);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
   .overlay.show{display:flex}
-  .modal{background:var(--card);border:1px solid var(--card-brd);border-radius:22px;max-width:400px;width:100%;padding:26px 24px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;animation:rise .25s ease;max-height:88vh;overflow-y:auto}
+  .modal{position:relative;background:var(--card);border:1px solid var(--card-brd);border-radius:22px;max-width:400px;width:100%;padding:26px 24px;box-shadow:0 20px 60px rgba(0,0,0,.35);text-align:center;animation:rise .25s ease;max-height:88vh;overflow-y:auto}
   @keyframes rise{from{transform:translateY(20px);opacity:0}to{transform:none;opacity:1}}
   .modal h2{margin:0 0 6px;color:var(--amber-dark);font-size:24px}
   .modal p{margin:6px 0;color:var(--muted);line-height:1.5}
@@ -306,6 +306,7 @@
   <!-- Yardım -->
   <div class="overlay" id="helpOverlay">
     <div class="modal">
+      <button class="closeX" id="helpCloseX" title="Kapat">×</button>
       <h2>Nasıl Oynanır</h2>
       <p>Bir karoya dokunduktan sonra başka bir karoya dokunduğunda, o karolarda bulunan harfler yer değiştirir.</p>
       <div class="hnote"><b>Not:</b> Yer değiştirmeyi, bir karoya basılı tutup başka bir karoya sürükleyip bırakarak da yapabilirsin.</div>
@@ -593,6 +594,7 @@ document.addEventListener('pointerup',onPointerUp);
 document.addEventListener('pointercancel',()=>{ if(dragging) endDrag(); dragStart=null; dragging=false; });
 document.getElementById('helpBtn').addEventListener('click',()=>{ document.getElementById('dontShowRow').style.display='none'; document.getElementById('helpOverlay').classList.add('show'); });
 document.getElementById('helpClose').addEventListener('click',()=>document.getElementById('helpOverlay').classList.remove('show'));
+document.getElementById('helpCloseX').addEventListener('click',()=>document.getElementById('helpOverlay').classList.remove('show'));
 document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('show'); }));
 
 /* ---- yardım popup ---- */
