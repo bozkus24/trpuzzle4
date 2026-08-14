@@ -191,6 +191,7 @@
   .statsbox{margin:10px 0 2px;text-align:left;border-top:1px solid var(--strip-brd);padding-top:12px}
   .statrow{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin:4px 2px}
   .statrow b{color:var(--ink);font-weight:800}
+  .statsbox .scope{font-size:11px;letter-spacing:2px;font-weight:800;color:var(--accent);margin:0 2px 8px;text-align:left}
   .dist-title{font-size:11px;letter-spacing:2px;font-weight:800;color:var(--muted);margin:10px 2px 6px}
   .dist{margin-top:2px}
   .drow{display:flex;align-items:center;gap:8px;margin:4px 0}
@@ -324,7 +325,7 @@
       </div>
       <p><b>Günlük bulmaca:</b> Her gün Türkiye saatiyle 00.00'da yenilenir. 3 yatay ve 3 dikey kelime vardır.</p>
       <p><b>Arşiv:</b> Geçmiş günlerin bulmacalarını buradan oynayabilirsin.</p>
-      <div class="hnote"><b>Not:</b> Burada oynadığın günler istatistiğe işlenmez.</div>
+      <div class="hnote"><b>Not:</b> Burada oynadığın günler günlük istatistiklerine karışmaz; ayrı olarak arşiv istatistiklerine işlenir.</div>
       <p style="margin-top:12px"><b>İpucu:</b> Köşelerdeki karolar ve ortadaki karo, hem bir yatay hem de bir dikey kelimeye aittir. Bu karolarda sarı renk görürsen; harfin yatay kelimede mi, dikey kelimede mi, yoksa ikisinde birden mi olması gerektiğinden emin olamazsın.</p>
       <label class="dontshow" id="dontShowRow"><input type="checkbox" id="helpDontShow"> Bir daha gösterme</label>
       <button class="btn primary" id="helpClose">ANLADIM</button>
@@ -480,6 +481,7 @@ const HOLES = new Set(["1,1","1,3","3,1","3,3"]);
 function isHole(r,c){return HOLES.has(r+","+c);}
 const STORE_KEY = "petek-progress-v1";
 const STATS_KEY = "waffle-stats-v1";
+const ASTATS_KEY = "baklava-arsiv-stats-v1";
 const THEME_KEY = "waffle-theme-v1";
 const HELP_KEY  = "waffle-help-hidden-v1";
 const DAY1 = Math.floor(Date.UTC(2026,7,1)/86400000);   // 1 Ağustos 2026 = #1
@@ -562,10 +564,10 @@ function loadMap(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||{};
 function save(){ try{ const m=loadMap(); const pos=activePositions(); m[dayIdCur]={letters:pos.map(([r,c])=>cur[r][c]),swapsLeft,phase}; localStorage.setItem(STORE_KEY,JSON.stringify(m)); }catch(e){} }
 
 /* ---- istatistik (gün başına bir kez) ---- */
-function loadStats(){ let s=null; try{ s=JSON.parse(localStorage.getItem(STATS_KEY)); }catch(e){} if(!s||typeof s!=='object') s={}; s.played=s.played||0; s.wins=s.wins||0; if(!s.dist||typeof s.dist!=='object') s.dist={}; for(let k=0;k<=5;k++) s.dist[k]=s.dist[k]||0; if(!s.days||typeof s.days!=='object'){ s.days={}; if(s.lastDay!=null) s.days[s.lastDay]=true; } return s; }
-function saveStats(s){ try{ localStorage.setItem(STATS_KEY,JSON.stringify(s)); }catch(e){} }
-function recordStats(id,win,stars){ if(id!==todayId()) return; const s=loadStats(); if(s.days[id]) return; s.days[id]=true; s.played++; if(win){ s.wins++; s.dist[stars]=(s.dist[stars]||0)+1; } saveStats(s); }
-function renderStatsBlock(el,highlight){ const s=loadStats(); const wr=s.played?Math.round(s.wins/s.played*100):0; let max=1; for(let k=0;k<=5;k++) max=Math.max(max,s.dist[k]); let html='<div class="statsbox">'+'<div class="statrow"><span>Oynanan</span><b>'+s.played+'</b></div>'+'<div class="statrow"><span>Kazanma oranı</span><b>%'+wr+'</b></div>'+'<div class="dist-title">DAĞILIM</div><div class="dist">'; [5,4,3,2,1,0].forEach(k=>{ const c=s.dist[k]||0,w=Math.max(12,(c/max)*100); html+='<div class="drow"><span class="dk">'+k+'<i class="bkl-mini"></i></span><div class="dbar"><i class="dfill'+(highlight===k?' cur':'')+'" style="width:'+w+'%">'+c+'</i></div></div>'; }); html+='</div></div>'; el.innerHTML=html; }
+function loadStats(key){ key=key||STATS_KEY; let s=null; try{ s=JSON.parse(localStorage.getItem(key)); }catch(e){} if(!s||typeof s!=='object') s={}; s.played=s.played||0; s.wins=s.wins||0; if(!s.dist||typeof s.dist!=='object') s.dist={}; for(let k=0;k<=5;k++) s.dist[k]=s.dist[k]||0; if(!s.days||typeof s.days!=='object'){ s.days={}; if(s.lastDay!=null) s.days[s.lastDay]=true; } return s; }
+function saveStats(s,key){ try{ localStorage.setItem(key||STATS_KEY,JSON.stringify(s)); }catch(e){} }
+function recordStats(id,win,stars){ const key=(id===todayId())?STATS_KEY:ASTATS_KEY; const s=loadStats(key); if(s.days[id]) return; s.days[id]=true; s.played++; if(win){ s.wins++; s.dist[stars]=(s.dist[stars]||0)+1; } saveStats(s,key); }
+function renderStatsBlock(el,highlight,arch){ const s=loadStats(arch?ASTATS_KEY:STATS_KEY); const wr=s.played?Math.round(s.wins/s.played*100):0; let max=1; for(let k=0;k<=5;k++) max=Math.max(max,s.dist[k]); let html='<div class="statsbox">'+'<div class="scope">'+(arch?'ARŞİV İSTATİSTİKLERİ':'GÜNLÜK İSTATİSTİKLER')+'</div>'+'<div class="statrow"><span>Oynanan</span><b>'+s.played+'</b></div>'+'<div class="statrow"><span>Kazanma oranı</span><b>%'+wr+'</b></div>'+'<div class="dist-title">DAĞILIM</div><div class="dist">'; [5,4,3,2,1,0].forEach(k=>{ const c=s.dist[k]||0,w=Math.max(12,(c/max)*100); html+='<div class="drow"><span class="dk">'+k+'<i class="bkl-mini"></i></span><div class="dbar"><i class="dfill'+(highlight===k?' cur':'')+'" style="width:'+w+'%">'+c+'</i></div></div>'; }); html+='</div></div>'; el.innerHTML=html; }
 
 /* ---- alt alan / geri sayım ---- */
 function renderActions(){ actionsEl.innerHTML=''; cdbarEl.style.display='none'; if(phase==='win'||phase==='lose'){ hintTextEl.textContent = phase==='win' ? 'Bulmacayı çözdün!' : ''; if(isTodayView()) cdbarEl.style.display=''; } else { hintTextEl.textContent=''; } }
@@ -574,7 +576,7 @@ function updateCountdown(){ const t=fmtHMS(msToMidnight()); const a=document.get
 /* ---- sonuç ekranı ---- */
 function buildMini(){ const m=document.getElementById('miniGrid'); m.innerHTML=''; for(let r=0;r<5;r++)for(let c=0;c<5;c++){ const d=document.createElement('div'); if(isHole(r,c)){d.className='mc hole';}else{d.className='mc';d.textContent=solution[r][c];} m.appendChild(d); } }
 function shareResult(){ const tag='#'+dayNo(dayIdCur); let txt; if(phase==='win'){ txt='Baklava '+tag+' · çözüldü ('+clamp(swapsLeft,0,5)+'/5)'; } else { txt='Baklava '+tag+' · bugün çözemedim'; } txt+='\n'+location.href; const b=document.getElementById('endShare'); if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; } try{ navigator.clipboard.writeText(txt); const o=b.textContent; b.textContent='Kopyalandı'; setTimeout(()=>b.textContent=o,1500); }catch(e){} }
-function showEnd(win){ render(); renderActions(); buildMini(); const head=document.getElementById('endHead'); const st=document.getElementById('endStars'); const endCd=document.getElementById('endCd'); if(win){ head.className='rhead win'; head.textContent=trUpper(dayLabel(dayIdCur)); document.getElementById('endTitle').textContent=(swapsLeft>=5)?'Harika!':'Tebrikler!'; st.style.display=''; st.innerHTML=bklIcons(clamp(swapsLeft,0,5),'bkl-lg'); } else { head.className='rhead'; head.textContent=trUpper(dayLabel(dayIdCur)); document.getElementById('endTitle').textContent='Az kaldı!'; st.style.display='none'; } document.getElementById('endMsg').textContent = win ? (MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS))+' hamlede çözdün.' : 'Zor bulmacaydı, herkes bazen kaçırır.'; const wbox=document.getElementById('endWords'); wbox.innerHTML=''; [...curPuzzle.across,...curPuzzle.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);}); renderStatsBlock(document.getElementById('endStatsBox'), win?clamp(swapsLeft,0,5):-1); if(isTodayView()){ endCd.style.display='flex'; updateCountdown(); } else { endCd.style.display='none'; } document.getElementById('endOverlay').classList.add('show'); }
+function showEnd(win){ render(); renderActions(); buildMini(); const head=document.getElementById('endHead'); const st=document.getElementById('endStars'); const endCd=document.getElementById('endCd'); if(win){ head.className='rhead win'; head.textContent=trUpper(dayLabel(dayIdCur)); document.getElementById('endTitle').textContent=(swapsLeft>=5)?'Harika!':'Tebrikler!'; st.style.display=''; st.innerHTML=bklIcons(clamp(swapsLeft,0,5),'bkl-lg'); } else { head.className='rhead'; head.textContent=trUpper(dayLabel(dayIdCur)); document.getElementById('endTitle').textContent='Az kaldı!'; st.style.display='none'; } document.getElementById('endMsg').textContent = win ? (MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS))+' hamlede çözdün.' : 'Zor bulmacaydı, herkes bazen kaçırır.'; const wbox=document.getElementById('endWords'); wbox.innerHTML=''; [...curPuzzle.across,...curPuzzle.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);}); renderStatsBlock(document.getElementById('endStatsBox'), win?clamp(swapsLeft,0,5):-1, !isTodayView()); document.querySelector('#endOverlay .rbtns').style.display=isTodayView()?'flex':'none'; if(isTodayView()){ endCd.style.display='flex'; updateCountdown(); } else { endCd.style.display='none'; } document.getElementById('endOverlay').classList.add('show'); }
 
 /* ---- arşiv ---- */
 function renderArchive(){ const list=document.getElementById('archiveList'); list.innerHTML=''; const tN=dayNo(todayId()); const m=loadMap(); for(let n=tN;n>=1;n--){ const id=idFromNo(n); const sv=m[id]; let status=''; if(sv){ if(sv.phase==='win') status=bklIcons(clamp(sv.swapsLeft,0,5),'bkl-mini'); else if(sv.phase==='lose') status='—'; } const row=document.createElement('button'); row.className='archrow'+(id===dayIdCur?' cur':''); row.innerHTML='<span class="an">#'+n+'</span><span class="ad">'+trDate(id)+'</span><span class="as">'+status+'</span>'; row.onclick=()=>{ document.getElementById('archiveOverlay').classList.remove('show'); loadDay(id); }; list.appendChild(row); } }
@@ -590,7 +592,7 @@ document.getElementById('endClose').addEventListener('click',()=>document.getEle
 document.getElementById('endShare').addEventListener('click',shareResult);
 document.getElementById('cdBtn').addEventListener('click',()=>{
   if(phase==='win'||phase==='lose'){ showEnd(phase==='win'); }   // bitmişse: paylaşma ekranı + altta genel istatistik
-  else { document.getElementById('statsHead').textContent=trUpper(dayLabel(dayIdCur)); renderStatsBlock(document.getElementById('soloStatsBox'),-1); document.getElementById('statsOverlay').classList.add('show'); }
+  else { document.getElementById('statsHead').textContent=trUpper(dayLabel(dayIdCur)); renderStatsBlock(document.getElementById('soloStatsBox'),-1,!isTodayView()); document.getElementById('statsOverlay').classList.add('show'); }
 });
 document.getElementById('statsClose').addEventListener('click',()=>document.getElementById('statsOverlay').classList.remove('show'));
 document.getElementById('archiveBtn').addEventListener('click',()=>{ renderArchive(); document.getElementById('archiveOverlay').classList.add('show'); });
