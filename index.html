@@ -192,6 +192,7 @@
   .statrow{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin:4px 2px}
   .statrow b{color:var(--ink);font-weight:800}
   .dist-title{font-size:11px;letter-spacing:2px;font-weight:800;color:var(--muted);margin:10px 2px 6px}
+  .statsbox .dist-title:first-child{margin-top:0}
   .dist{margin-top:2px}
   .drow{display:flex;align-items:center;gap:8px;margin:4px 0}
   .dk{width:34px;font-size:12px;font-weight:800;color:var(--ink);display:flex;align-items:center;justify-content:flex-end;gap:3px}
@@ -274,7 +275,6 @@
   <div class="overlay" id="statsOverlay">
     <div class="modal">
       <div class="rhead plain" id="statsHead"></div>
-      <h2>İstatistikler</h2>
       <div id="soloStatsBox"></div>
       <button class="btn ghost" id="statsClose" style="margin-top:14px">KAPAT</button>
     </div>
@@ -565,7 +565,7 @@ function save(){ try{ const m=loadMap(); const pos=activePositions(); m[dayIdCur
 function loadStats(){ let s=null; try{ s=JSON.parse(localStorage.getItem(STATS_KEY)); }catch(e){} if(!s||typeof s!=='object') s={}; s.played=s.played||0; s.wins=s.wins||0; if(!s.dist||typeof s.dist!=='object') s.dist={}; for(let k=0;k<=5;k++) s.dist[k]=s.dist[k]||0; if(!s.days||typeof s.days!=='object'){ s.days={}; if(s.lastDay!=null) s.days[s.lastDay]=true; } return s; }
 function saveStats(s){ try{ localStorage.setItem(STATS_KEY,JSON.stringify(s)); }catch(e){} }
 function recordStats(id,win,stars){ if(id!==todayId()) return; const s=loadStats(); if(s.days[id]) return; s.days[id]=true; s.played++; if(win){ s.wins++; s.dist[stars]=(s.dist[stars]||0)+1; } saveStats(s); }
-function renderStatsBlock(el,highlight){ const s=loadStats(); const wr=s.played?Math.round(s.wins/s.played*100):0; let max=1; for(let k=0;k<=5;k++) max=Math.max(max,s.dist[k]); let html='<div class="statsbox">'+'<div class="statrow"><span>Oynanan</span><b>'+s.played+'</b></div>'+'<div class="statrow"><span>Kazanma oranı</span><b>%'+wr+'</b></div>'+'<div class="dist-title">DAĞILIM</div><div class="dist">'; [5,4,3,2,1,0].forEach(k=>{ const c=s.dist[k]||0,w=Math.max(12,(c/max)*100); html+='<div class="drow"><span class="dk">'+k+'<i class="bkl-mini"></i></span><div class="dbar"><i class="dfill'+(highlight===k?' cur':'')+'" style="width:'+w+'%">'+c+'</i></div></div>'; }); html+='</div></div>'; el.innerHTML=html; }
+function renderStatsBlock(el,highlight){ const s=loadStats(); const wr=s.played?Math.round(s.wins/s.played*100):0; let max=1; for(let k=0;k<=5;k++) max=Math.max(max,s.dist[k]); let html='<div class="statsbox">'+'<div class="dist-title">İSTATİSTİKLER</div>'+'<div class="statrow"><span>Oynanan</span><b>'+s.played+'</b></div>'+'<div class="statrow"><span>Kazanma oranı</span><b>%'+wr+'</b></div>'+'<div class="dist-title">DAĞILIM</div><div class="dist">'; [5,4,3,2,1,0].forEach(k=>{ const c=s.dist[k]||0,w=Math.max(12,(c/max)*100); html+='<div class="drow"><span class="dk">'+k+'<i class="bkl-mini"></i></span><div class="dbar"><i class="dfill'+(highlight===k?' cur':'')+'" style="width:'+w+'%">'+c+'</i></div></div>'; }); html+='</div></div>'; el.innerHTML=html; }
 
 /* ---- alt alan / geri sayım ---- */
 function renderActions(){ actionsEl.innerHTML=''; cdbarEl.style.display='none'; if(phase==='win'||phase==='lose'){ hintTextEl.textContent = phase==='win' ? 'Bulmacayı çözdün!' : ''; if(isTodayView()) cdbarEl.style.display=''; } else { hintTextEl.textContent=''; } }
