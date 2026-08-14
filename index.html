@@ -76,7 +76,7 @@
   .topbar-inner{width:100%;max-width:440px;display:flex;align-items:center;justify-content:space-between;gap:8px}
   .brandwrap{display:flex;align-items:center;gap:9px;flex-shrink:0}
   .ptitle{margin:0;font-size:22px;font-weight:900;letter-spacing:2px;color:var(--amber-dark);line-height:1}
-  .subline{text-align:center;font-size:12px;letter-spacing:3px;color:var(--muted);font-weight:700;margin-top:12px}
+  .subline{text-align:center;font-size:14px;letter-spacing:2px;color:var(--muted);font-weight:700;margin-top:12px}
   .setrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 2px;border-bottom:1px solid var(--card-brd)}
   .setinfo{display:flex;flex-direction:column;gap:3px;min-width:0;text-align:left;align-items:flex-start}
   .setinfo b{font-size:16px;font-weight:800;color:var(--ink);line-height:1.15}
@@ -179,6 +179,7 @@
   .closeX{position:absolute;top:10px;right:14px;border:none;background:transparent;font-size:26px;line-height:1;color:var(--muted);cursor:pointer;font-weight:700}
   .rhead{font-size:11px;letter-spacing:3px;font-weight:800;color:var(--rlose);text-transform:uppercase;margin-bottom:8px}
   .rhead.win{color:var(--rwin)}
+  .rhead.plain{color:var(--muted)}
   .rtitle{font-family:'Chakra Petch','Segoe UI',sans-serif;font-style:italic;font-size:30px;color:var(--amber-dark);margin:2px 0 10px}
   .mini{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;width:196px;margin:0 auto 12px}
   .mini .mc{aspect-ratio:1/1;border-radius:6px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#fff;background:var(--green);box-shadow:0 2px 0 var(--green-sh)}
@@ -272,6 +273,7 @@
   <!-- İstatistik -->
   <div class="overlay" id="statsOverlay">
     <div class="modal">
+      <div class="rhead plain" id="statsHead"></div>
       <h2>İstatistikler</h2>
       <div id="soloStatsBox"></div>
       <button class="btn ghost" id="statsClose" style="margin-top:14px">KAPAT</button>
@@ -508,6 +510,7 @@ function msToMidnight(){ const n=new Date(); const nx=new Date(n.getFullYear(),n
 function fmtHMS(ms){ let s=Math.max(0,Math.floor(ms/1000)); const h=Math.floor(s/3600); s%=3600; const m=Math.floor(s/60); s%=60; const p=x=>String(x).padStart(2,'0'); return p(h)+':'+p(m)+':'+p(s); }
 function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
 function isTodayView(){ return dayIdCur===todayId(); }
+function dayLabel(id){ return (id===todayId()?'Günün Oyunu':'Arşiv')+' · '+trDate(id); }
 
 /* ---- tema ---- */
 const CB_KEY="petek-cb-v1";
@@ -569,13 +572,13 @@ function updateCountdown(){ const t=fmtHMS(msToMidnight()); const a=document.get
 /* ---- sonuç ekranı ---- */
 function buildMini(){ const m=document.getElementById('miniGrid'); m.innerHTML=''; for(let r=0;r<5;r++)for(let c=0;c<5;c++){ const d=document.createElement('div'); if(isHole(r,c)){d.className='mc hole';}else{d.className='mc';d.textContent=solution[r][c];} m.appendChild(d); } }
 function shareResult(){ const tag='#'+dayNo(dayIdCur); let txt; if(phase==='win'){ txt='Baklava '+tag+' · çözüldü ('+clamp(swapsLeft,0,5)+'/5)'; } else { txt='Baklava '+tag+' · bugün çözemedim'; } txt+='\n'+location.href; const b=document.getElementById('endShare'); if(navigator.share){ navigator.share({text:txt}).catch(()=>{}); return; } try{ navigator.clipboard.writeText(txt); const o=b.textContent; b.textContent='Kopyalandı'; setTimeout(()=>b.textContent=o,1500); }catch(e){} }
-function showEnd(win){ render(); renderActions(); buildMini(); const head=document.getElementById('endHead'); const st=document.getElementById('endStars'); const endCd=document.getElementById('endCd'); const tag='#'+dayNo(dayIdCur); if(win){ head.className='rhead win'; head.textContent='BAKLAVA · '+tag+' · ÇÖZÜLDÜ'; document.getElementById('endTitle').textContent=(swapsLeft>=5)?'Harika!':'Tebrikler!'; st.style.display=''; st.innerHTML=bklIcons(clamp(swapsLeft,0,5),'bkl-lg'); } else { head.className='rhead'; head.textContent='BAKLAVA · '+tag+' · HAKLAR BİTTİ'; document.getElementById('endTitle').textContent='Az kaldı!'; st.style.display='none'; } document.getElementById('endMsg').textContent = win ? (MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS))+' hamlede çözdün.' : 'Zor bulmacaydı, herkes bazen kaçırır.'; const wbox=document.getElementById('endWords'); wbox.innerHTML=''; [...curPuzzle.across,...curPuzzle.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);}); renderStatsBlock(document.getElementById('endStatsBox'), win?clamp(swapsLeft,0,5):-1); if(isTodayView()){ endCd.style.display='flex'; updateCountdown(); } else { endCd.style.display='none'; } document.getElementById('endOverlay').classList.add('show'); }
+function showEnd(win){ render(); renderActions(); buildMini(); const head=document.getElementById('endHead'); const st=document.getElementById('endStars'); const endCd=document.getElementById('endCd'); if(win){ head.className='rhead win'; head.textContent=dayLabel(dayIdCur); document.getElementById('endTitle').textContent=(swapsLeft>=5)?'Harika!':'Tebrikler!'; st.style.display=''; st.innerHTML=bklIcons(clamp(swapsLeft,0,5),'bkl-lg'); } else { head.className='rhead'; head.textContent=dayLabel(dayIdCur); document.getElementById('endTitle').textContent='Az kaldı!'; st.style.display='none'; } document.getElementById('endMsg').textContent = win ? (MAX_SWAPS-clamp(swapsLeft,0,MAX_SWAPS))+' hamlede çözdün.' : 'Zor bulmacaydı, herkes bazen kaçırır.'; const wbox=document.getElementById('endWords'); wbox.innerHTML=''; [...curPuzzle.across,...curPuzzle.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);}); renderStatsBlock(document.getElementById('endStatsBox'), win?clamp(swapsLeft,0,5):-1); if(isTodayView()){ endCd.style.display='flex'; updateCountdown(); } else { endCd.style.display='none'; } document.getElementById('endOverlay').classList.add('show'); }
 
 /* ---- arşiv ---- */
 function renderArchive(){ const list=document.getElementById('archiveList'); list.innerHTML=''; const tN=dayNo(todayId()); const m=loadMap(); for(let n=tN;n>=1;n--){ const id=idFromNo(n); const sv=m[id]; let status=''; if(sv){ if(sv.phase==='win') status=bklIcons(clamp(sv.swapsLeft,0,5),'bkl-mini'); else if(sv.phase==='lose') status='—'; } const row=document.createElement('button'); row.className='archrow'+(id===dayIdCur?' cur':''); row.innerHTML='<span class="an">#'+n+'</span><span class="ad">'+trDate(id)+'</span><span class="as">'+status+'</span>'; row.onclick=()=>{ document.getElementById('archiveOverlay').classList.remove('show'); loadDay(id); }; list.appendChild(row); } }
 
 /* ---- gün yükle ---- */
-function loadDay(id){ dayIdCur=id; const idx=((id%PUZZLES.length)+PUZZLES.length)%PUZZLES.length; curPuzzle=PUZZLES[idx]; solution=buildSolution(curPuzzle); const m=loadMap(); const sv=m[id]; if(sv&&Array.isArray(sv.letters)&&sv.letters.length===21){ cur=toGrid(activePositions(),sv.letters); swapsLeft=(typeof sv.swapsLeft==='number')?sv.swapsLeft:MAX_SWAPS; phase=(sv.phase==='win'||sv.phase==='lose')?sv.phase:'play'; } else { cur=makeScrambleSeeded(solution, mulberry32((id*2654435761)>>>0)); swapsLeft=MAX_SWAPS; phase='play'; save(); } selected=null; subLblEl.textContent=(id===todayId()?'Günün oyunu':'Arşiv')+' · '+trDate(id); document.getElementById('endOverlay').classList.remove('show'); render(); renderActions(); if(phase==='win'||phase==='lose') showEnd(phase==='win'); }
+function loadDay(id){ dayIdCur=id; const idx=((id%PUZZLES.length)+PUZZLES.length)%PUZZLES.length; curPuzzle=PUZZLES[idx]; solution=buildSolution(curPuzzle); const m=loadMap(); const sv=m[id]; if(sv&&Array.isArray(sv.letters)&&sv.letters.length===21){ cur=toGrid(activePositions(),sv.letters); swapsLeft=(typeof sv.swapsLeft==='number')?sv.swapsLeft:MAX_SWAPS; phase=(sv.phase==='win'||sv.phase==='lose')?sv.phase:'play'; } else { cur=makeScrambleSeeded(solution, mulberry32((id*2654435761)>>>0)); swapsLeft=MAX_SWAPS; phase='play'; save(); } selected=null; subLblEl.textContent=dayLabel(id); document.getElementById('endOverlay').classList.remove('show'); render(); renderActions(); if(phase==='win'||phase==='lose') showEnd(phase==='win'); }
 
 /* ---- saat / gün değişimi ---- */
 setInterval(()=>{ const t=todayId(); if(t!==TODAY){ const wasToday=(dayIdCur===TODAY); TODAY=t; if(wasToday){ loadDay(t); return; } } if((phase==='win'||phase==='lose')&&isTodayView()) updateCountdown(); },1000);
@@ -585,7 +588,7 @@ document.getElementById('endClose').addEventListener('click',()=>document.getEle
 document.getElementById('endShare').addEventListener('click',shareResult);
 document.getElementById('cdBtn').addEventListener('click',()=>{
   if(phase==='win'||phase==='lose'){ showEnd(phase==='win'); }   // bitmişse: paylaşma ekranı + altta genel istatistik
-  else { renderStatsBlock(document.getElementById('soloStatsBox'),-1); document.getElementById('statsOverlay').classList.add('show'); }
+  else { document.getElementById('statsHead').textContent=dayLabel(dayIdCur); renderStatsBlock(document.getElementById('soloStatsBox'),-1); document.getElementById('statsOverlay').classList.add('show'); }
 });
 document.getElementById('statsClose').addEventListener('click',()=>document.getElementById('statsOverlay').classList.remove('show'));
 document.getElementById('archiveBtn').addEventListener('click',()=>{ renderArchive(); document.getElementById('archiveOverlay').classList.add('show'); });
