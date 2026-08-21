@@ -5,8 +5,8 @@
 
 ## Durum
 
-- Dal: `claude/selam-kanka-f32u76` — temiz, push edilmiş.
-- **`main`'e girmemiş 29 commit var.** Son merge PR #3'tü; ondan sonraki tüm iş (611 bulmaca, 9 hamle, renk tablosu, CLAUDE.md) hâlâ sadece dalda. Kullanıcı "maine merge et" derse yeni PR aç.
+- **611 bulmacalık iş `main`'e girdi (PR #5 merged).** `main` = son bulmaca/renk/9-hamle çalışması. HANDOFF'un "29 commit merge bekliyor" notu artık geçersiz.
+- Aktif dal: `claude/read-claude-handoff-md-4gslk1` (bu oturum). Eski dal `claude/selam-kanka-f32u76` merge edildi.
 - Canlı önizleme (artifact, son sürüm yayında):
   `https://claude.ai/code/artifact/c7d969cf-cbf3-4263-9525-81130010a430`
 - Eski artifact `2b0d231d-…` **kullanılmıyor** (herkese açık paylaşımı takılmıştı, yerine yenisi açıldı).
@@ -33,17 +33,14 @@
 - **Ligatürler kapalı**: `fi` ligatürü `i`'nin noktasını siliyordu ("harfin" → "harfın").
 - **Üretim betikleri depoya konmadı** — geçici klasörde kaldılar, çıktı yolları oraya sabitli olduğu için depoda işe yaramazlardı.
 
-## ⚠️ Bilinen sorun — öncelikli
+## Kapatılan konu — hassas kelimeler
 
-**47 bulmacada hassas kelimeler cevap olarak geçiyor.** 249 bulmacalık sürümde bunları eleyen bir liste vardı; bulmaca sayısını 611'e çıkarırken (yeni üretici) o filtre **düşürüldü ve bu fark edilmedi**. Geçen 35 kelime:
+**47 bulmacada hassas/kaba kelimeler cevap olarak geçiyor** (`ZENCİ GAVUR IRKÇI APTAL SALAK FUHUŞ VULVA ALLAH KAFİR MÜMİN İSHAL` vb., toplam 35 farklı kelime / 47 bulmaca). 249'luk sürümdeki eleme listesi 611'e çıkarken düşmüştü.
 
-`AHMAK APTAL SALAK MORUK HERİF ZENCİ GAVUR DÜRZÜ IRKÇI ŞOPAR LAVUK GEBEŞ HÖDÜK BÜCÜR PAÇOZ YOSMA ZÜPPE ZORBA RÜKÜŞ ZALİM MELUN KAFİR MÜMİN ŞAFİİ HAÇLI ALLAH CÜNÜP FUHUŞ VULVA SİDİK KABIZ İSHAL HADIM AHRAZ AYYAŞ`
-
-Kelimeler kullanıcının havuz dosyasında var, yani havuz hatası değil; karar meselesi. Yapılacak: kullanıcıya sor — elenecekse üreticiye engel listesi eklenip **sadece etkilenen 47 bulmaca** yeniden üretilmeli (diğerlerinin `start` değerleri korunmalı, gün→bulmaca eşlemesi kaymasın diye sıra bozulmamalı).
+**Karar (2026-08-21, kullanıcı): elenmeyecek. Olduğu gibi kalıyor.** Kelimeler kullanıcının kendi havuz dosyasında var; bir şey yapılmadı. Tekrar açılmasın diye üreticiye engel listesi EKLEME.
 
 ## Diğer açık başlıklar
 
-- **`main`'e merge** bekliyor (yukarıda).
 - **Artifact'in herkese açık paylaşımı** hiç doğrulanmadı. Eski linkte "This version can't be shared publicly" hatası vardı; yeni link açıldı ama kullanıcı paylaşımın çalıştığını teyit etmedi. Sorarsa: gerçekten herkese açık bir adres gerekiyorsa GitHub Pages en sağlam yol (depo tek `index.html`, Pages'i açmak yeterli).
 - **`logo.png` 5 MB** ve depoda duruyor. Oyunda kullanılan hâli zaten `index.html` içine gömülü; istenirse küçültülebilir/çıkarılabilir.
 - Havuzdaki 2788 kelimenin **113'ü** hiçbir bulmacada kullanılmıyor (grid kuramadıkları için). Teorik tavan ~680, ulaşılan 611.
