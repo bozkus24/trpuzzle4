@@ -1071,12 +1071,6 @@ function updateCountdown(){ const t=fmtHMS(msToMidnight()); const a=document.get
 
 /* ---- sonuç ekranı ---- */
 function buildMini(sol){ sol=sol||solution; const m=document.getElementById('miniGrid'); m.innerHTML=''; for(let r=0;r<5;r++)for(let c=0;c<5;c++){ const d=document.createElement('div'); if(isHole(r,c)){d.className='mc hole';}else{d.className='mc';d.textContent=sol[r][c];} m.appendChild(d); } }
-/* Paylasilacak baglanti: iframe icindeysek ust pencerenin adresini kullan */
-function shareUrl(){
-  try{ const u=window.top.location.href; if(/^https?:/.test(u)) return u; }catch(e){}
-  try{ if(/^https?:/.test(document.referrer)) return document.referrer; }catch(e){}
-  return /^https?:/.test(location.href) ? location.href : '';
-}
 /* Panoya kopyala: once modern API, olmazsa execCommand */
 async function copyText(t){
   try{ if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(t); return true; } }catch(e){}
@@ -1090,21 +1084,20 @@ async function copyText(t){
 function flashBtn(b,msg){ if(!b.dataset.lbl) b.dataset.lbl=b.textContent; b.textContent=msg; clearTimeout(b._t); b._t=setTimeout(()=>{ b.textContent=b.dataset.lbl; },1800); }
 /* Cozulmus baklava sekli: dolu hucreler yesil, bosluklar beyaz */
 function bklShape(){ const rows=[]; for(let r=0;r<5;r++){ let s=''; for(let c=0;c<5;c++) s+=isHole(r,c)?'⬜':'🟩'; rows.push(s); } return rows.join('\n'); }
-/* Skor satirini ortala: her eksik yildiz icin 2 bosluk (0,2,4,6,8) */
-function ctr(n){ return ' '.repeat((5-clamp(n,0,5))*2); }
+/* Paylasimda gosterilecek sabit oyun linki */
+const SHARE_LINK='https://trpuzzle.com/baklava/';
 function shareText(){
   const d=endShown||{id:dayIdCur,win:(phase==='win'),left:swapsLeft};
   const tag='#'+dayNo(d.id);
-  const u=shareUrl();
   let txt;
   if(d.win){
     const n=clamp(d.left,0,5);
     const used=MAX_SWAPS-clamp(d.left,0,MAX_SWAPS);
-    txt='Baklava '+tag+' '+used+'/'+MAX_SWAPS+'\n'+ctr(n)+'🔸'.repeat(n)+'\n\n'+bklShape();
+    txt='Baklava '+tag+' '+used+'/'+MAX_SWAPS+'\nSkor: '+'🔸'.repeat(n)+'\n'+bklShape();
   } else {
     txt='Baklava '+tag+' bugün çözemedim';
   }
-  if(u) txt+='\n'+u;
+  txt+='\n'+SHARE_LINK;
   return txt;
 }
 async function shareResult(){
