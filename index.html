@@ -1090,8 +1090,10 @@ async function copyText(t){
 function flashBtn(b,msg){ if(!b.dataset.lbl) b.dataset.lbl=b.textContent; b.textContent=msg; clearTimeout(b._t); b._t=setTimeout(()=>{ b.textContent=b.dataset.lbl; },1800); }
 /* Cozulmus baklava sekli: dolu hucreler yesil, bosluklar beyaz */
 function bklShape(){ const rows=[]; for(let r=0;r<5;r++){ let s=''; for(let c=0;c<5;c++) s+=isHole(r,c)?'⬜':'🟩'; rows.push(s); } return rows.join('\n'); }
-/* Skor satirini 5 hucrelik izgaranin ustune ortala (bos hucre basina ~2 bosluk) */
-function ctr(n){ return ' '.repeat(Math.max(0,5-n)); }
+/* Skor satirini 5 hucrelik izgaraya gore ortala. Emoji hucresi genisligine
+   yakin bosluklar: tam hucre = U+3000 (ideografik), yarim hucre = U+2002 (en).
+   Boylece cift skorlarda (2/4) da ortalanir. */
+function ctr(n){ const cells=(5-n)/2, full=Math.floor(cells), half=(cells-full)>0; return '　'.repeat(full)+(half?' ':''); }
 function shareText(){
   const d=endShown||{id:dayIdCur,win:(phase==='win'),left:swapsLeft};
   const tag='#'+dayNo(d.id);
@@ -1100,7 +1102,7 @@ function shareText(){
   if(d.win){
     const n=clamp(d.left,0,5);
     const used=MAX_SWAPS-clamp(d.left,0,MAX_SWAPS);
-    txt='Baklava '+tag+' '+used+' hamle/'+MAX_SWAPS+'\n'+ctr(n)+'🔸'.repeat(n)+'\n\n'+bklShape();
+    txt='Baklava '+tag+' '+used+'/'+MAX_SWAPS+'\n'+ctr(n)+'🔸'.repeat(n)+'\n\n'+bklShape();
   } else {
     txt='Baklava '+tag+' bugün çözemedim';
   }
