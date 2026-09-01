@@ -11,8 +11,8 @@
 <meta property="og:title" content="Baklava">
 <meta property="og:description" content="Karoları kaydırarak altı kelimeyi tamamla.">
 <meta property="og:image" content="https://trpuzzle.com/baklava/og.png">
-<meta property="og:image:width" content="512">
-<meta property="og:image:height" content="512">
+<meta property="og:image:width" content="256">
+<meta property="og:image:height" content="256">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Baklava">
 <meta name="twitter:description" content="Karoları kaydırarak altı kelimeyi tamamla.">
@@ -177,8 +177,6 @@
   .modal h2{margin:0 0 6px;color:var(--amber-dark);font-size:24px}
   .modal p{margin:6px 0;color:var(--muted);line-height:1.5}
   .modal .bigstars{display:flex;gap:7px;justify-content:center;align-items:center;margin:10px 0}
-  .modal .words{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:14px 0}
-  .modal .words span{background:var(--chip-bg);color:var(--chip-ink);font-weight:800;padding:4px 10px;border-radius:8px;font-size:13px;letter-spacing:1px}
   .modal ul{text-align:left;margin:10px 0;padding-left:18px;color:var(--muted);line-height:1.7;font-size:14px}
   .modal .hnote{text-align:left;margin:6px 0 12px;padding:9px 12px;background:var(--chip-bg);border-left:3px solid var(--accent);border-radius:8px;font-size:13px;color:var(--muted);line-height:1.55}
   .modal .hnote b{color:var(--ink)}
@@ -275,7 +273,7 @@ html.tp-splash-acik{background:#fff}
 #tp-splash .tp-drawer-nav a:hover{background:rgba(0,0,0,.05)}
 #tp-splash .tp-sw{width:12px;height:12px;border-radius:50%;flex-shrink:0}
 #tp-splash .tp-nav-sep{height:1px;background:rgba(0,0,0,.1);margin:9px 14px}
-#tp-splash .tp-drawer-nav a.tp-nav-page{color:#5b6068;font-size:14.5px;padding-left:39px}
+#tp-splash .tp-drawer-nav a.tp-nav-page{color:#5b6068;font-size:14.5px;padding-left:14px}
 #tp-splash .tp-nav-row{list-style:none;display:flex;align-items:center;gap:6px;padding:3px 8px 3px 12px;border-radius:10px;font-weight:600;font-size:15.5px;color:#1d1f24;text-decoration:none}
 #tp-splash .tp-nav-row::-webkit-details-marker{display:none}
 #tp-splash .tp-nav-row:hover{background:rgba(0,0,0,.05)}
@@ -322,6 +320,7 @@ html.tp-splash-acik{background:#fff}
   font-family:inherit;touch-action:manipulation}
 #tp-splash .tp-play:active{transform:translateY(1px)}
 #tp-splash .tp-meta{font-size:14px;line-height:1.8;color:#5b6068;margin-top:6px}
+#tp-splash .tp-by{display:block}
 #tp-splash #tpDate{font-weight:700}
 @media(min-width:800px){
   #tp-splash .tp-name{font-size:60px}
@@ -402,7 +401,7 @@ html.tp-splash-acik{background:#fff}
       <details class="tp-nav-item">
         <summary class="tp-nav-row">
           <a class="tp-nav-main" href="/kesme/">
-            <span class="tp-nav-ico" style="--ico-size:39px;color:#cc4437"><svg viewBox="0 0 100 100"><rect x="15.25" y="15.25" width="69.5" height="69.5" rx="6.75" fill="currentColor" fill-opacity="0.32" stroke="#1d1f24" stroke-width="4.5" stroke-linejoin="round"/><path d="M15.25 84.75 L84.75 15.25" stroke="#1d1f24" stroke-width="4" stroke-dasharray="10 7.65757"/></svg></span>
+            <span class="tp-nav-ico" style="--ico-size:39px;color:#cc4437"><svg viewBox="0 0 100 100"><rect x="15.25" y="15.25" width="69.5" height="69.5" rx="6.75" fill="currentColor" fill-opacity="0.32" stroke="#1d1f24" stroke-width="4.5" stroke-linejoin="round"/><path d="M17.0503 82.9497 L82.9497 17.0503" stroke="#1d1f24" stroke-width="4" stroke-linecap="butt" stroke-dasharray="9.4819 7.2609"/></svg></span>
             <span class="tp-nav-name">Kesme</span>
           </a>
           <span class="tp-nav-toggle" aria-label="Kesme bağlantıları"><svg class="tp-nav-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
@@ -556,6 +555,7 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
     <div class="tp-meta">
       <span id="tpDate"></span><br>
       <span id="tpNo"></span>
+      <span class="tp-by">Hazırlayan: TrPuzzle</span>
     </div>
   </div>
 </div>
@@ -603,7 +603,6 @@ c0 -41 -6 -73 -15 -88 -19 -28 -100 -82 -139 -92 l-29 -7 7 -83 c8 -101 3
       <div class="bigstars" id="endStars" style="display:none"></div>
       <div class="mini" id="miniGrid"></div>
       <p id="endMsg"></p>
-      <div class="words" id="endWords"></div>
       <div id="endStatsBox"></div>
       <div class="rbtns">
         <button class="btn ghost" id="endShare">Paylaş</button>
@@ -1389,10 +1388,10 @@ function loadMap(){ try{ return JSON.parse(localStorage.getItem(STORE_KEY))||{};
 function save(){ try{ const m=loadMap(); const pos=activePositions(); const _e={letters:pos.map(([r,c])=>cur[r][c]),swapsLeft,phase}; if(lostRanks)_e.ranks=lostRanks; m[dayIdCur]=_e; localStorage.setItem(STORE_KEY,JSON.stringify(m)); }catch(e){} }
 
 /* ---- istatistik (gün başına bir kez) ---- */
-function loadStats(){ let s=null; try{ s=JSON.parse(localStorage.getItem(STATS_KEY)); }catch(e){} if(!s||typeof s!=='object') s={}; s.played=s.played||0; s.wins=s.wins||0; if(!s.dist||typeof s.dist!=='object') s.dist={}; for(let k=0;k<=5;k++) s.dist[k]=s.dist[k]||0; if(!s.days||typeof s.days!=='object'){ s.days={}; if(s.lastDay!=null) s.days[s.lastDay]=true; } return s; }
+function loadStats(){ let s=null; try{ s=JSON.parse(localStorage.getItem(STATS_KEY)); }catch(e){} if(!s||typeof s!=='object') s={}; s.played=s.played||0; s.wins=s.wins||0; if(!s.dist||typeof s.dist!=='object') s.dist={}; for(let k=0;k<=5;k++) s.dist[k]=s.dist[k]||0; if(!s.days||typeof s.days!=='object'){ s.days={}; if(s.lastDay!=null) s.days[s.lastDay]=true; } s.streak=s.streak||0; s.best=s.best||0; if(typeof s.lastWinDay!=='number') s.lastWinDay=null; return s; }
 function saveStats(s){ try{ localStorage.setItem(STATS_KEY,JSON.stringify(s)); }catch(e){} }
-function recordStats(id,win,stars){ if(id!==todayId()) return; const s=loadStats(); if(s.days[id]) return; s.days[id]=true; s.played++; if(win){ s.wins++; s.dist[stars]=(s.dist[stars]||0)+1; } saveStats(s); }
-function renderStatsBlock(el,highlight){ const s=loadStats(); const wr=s.played?Math.round(s.wins/s.played*100):0; let max=1; for(let k=0;k<=5;k++) max=Math.max(max,s.dist[k]); let html='<div class="statsbox">'+'<div class="sttl">İSTATİSTİKLER</div>'+'<div class="statrow"><span>Oynanan</span><b>'+s.played+'</b></div>'+'<div class="statrow"><span>Kazanma oranı</span><b>%'+wr+'</b></div>'+'<div class="dist-title">DAĞILIM</div><div class="dist">'; [5,4,3,2,1,0].forEach(k=>{ const c=s.dist[k]||0,w=Math.max(12,(c/max)*100); html+='<div class="drow"><span class="dk">'+k+'<i class="bkl-mini"></i></span><div class="dbar"><i class="dfill'+(highlight===k?' cur':'')+'" style="width:'+w+'%">'+c+'</i></div></div>'; }); html+='</div></div>'; el.innerHTML=html; }
+function recordStats(id,win,stars){ if(id!==todayId()) return; const s=loadStats(); if(s.days[id]) return; s.days[id]=true; s.played++; if(win){ s.wins++; s.dist[stars]=(s.dist[stars]||0)+1; s.streak=(s.lastWinDay===id-1)?s.streak+1:1; s.lastWinDay=id; if(s.streak>s.best) s.best=s.streak; } else { s.streak=0; s.lastWinDay=null; } saveStats(s); }
+function renderStatsBlock(el,highlight){ const s=loadStats(); const wr=s.played?Math.round(s.wins/s.played*100):0; let max=1; for(let k=0;k<=5;k++) max=Math.max(max,s.dist[k]); let html='<div class="statsbox">'+'<div class="sttl">İSTATİSTİKLER</div>'+'<div class="statrow"><span>Oynanan</span><b>'+s.played+'</b></div>'+'<div class="statrow"><span>Kazanma oranı</span><b>%'+wr+'</b></div>'+'<div class="statrow"><span>Güncel seri</span><b>'+(s.streak||0)+'</b></div>'+'<div class="statrow"><span>Seri rekoru</span><b>'+(s.best||0)+'</b></div>'+'<div class="dist-title">DAĞILIM</div><div class="dist">'; [5,4,3,2,1,0].forEach(k=>{ const c=s.dist[k]||0,w=Math.max(12,(c/max)*100); html+='<div class="drow"><span class="dk">'+k+'<i class="bkl-mini"></i></span><div class="dbar"><i class="dfill'+(highlight===k?' cur':'')+'" style="width:'+w+'%">'+c+'</i></div></div>'; }); html+='</div></div>'; el.innerHTML=html; }
 
 /* ---- alt alan / geri sayım ---- */
 function renderActions(){ actionsEl.innerHTML=''; cdbarEl.style.display='none'; if(phase==='win'||phase==='lose'){ hintTextEl.textContent = phase==='win' ? 'Bulmacayı çözdün!' : ''; if(isTodayView()) cdbarEl.style.display=''; } else { hintTextEl.textContent=''; } }
@@ -1450,6 +1449,8 @@ async function shareResult(){
   const ta=document.getElementById('shareTxt'); ta.value=txt; fall.style.display='block'; ta.select(); ta.setSelectionRange(0,txt.length); flashBtn(b,'Kopyalanamadı');
 }
 /* Belirli bir gunun sonuc ekranini, o gunun kayitli verisinden kurar (mevcut tahtaya dokunmaz) */
+/* Kazanilan baklava (yildiz) sayisina gore ovgu; 0'dan 5'e artan sirada */
+const BKL_OVGU=['Ehh...','Fena değil!','Güzel!','Başarılı!','Harika!','Kusursuz!'];
 function showEndFor(id,win,left){
   const isToday=(id===todayId());
   endShown={id:id,win:!!win,left:left};
@@ -1458,11 +1459,10 @@ function showEndFor(id,win,left){
   const bkl=clamp(left,0,5);
   buildMini(sol);
   const head=document.getElementById('endHead'); const st=document.getElementById('endStars'); const endCd=document.getElementById('endCd');
-  head.className=win?'rhead win':'rhead'; head.textContent=trUpper(dayLabel(id));
-  if(win){ document.getElementById('endTitle').textContent=(left>=5)?'Harika!':'Tebrikler!'; st.style.display=''; st.innerHTML=bklIcons(bkl,'bkl-lg'); }
+  head.className=win?'rhead win':'rhead'; head.textContent='Baklava #'+dayNo(id);
+  if(win){ document.getElementById('endTitle').textContent=BKL_OVGU[bkl]; st.style.display=''; st.innerHTML=bklIcons(bkl,'bkl-lg'); }
   else { document.getElementById('endTitle').textContent='Az kaldı!'; if(isToday){ st.style.display='none'; } else { st.style.display=''; st.innerHTML=bklIcons(0,'bkl-lg'); } }
   document.getElementById('endMsg').textContent = win ? (MAX_SWAPS-clamp(left,0,MAX_SWAPS))+' hamlede çözdün.' : 'Zor bulmacaydı, herkes bazen kaçırır.';
-  const wbox=document.getElementById('endWords'); wbox.innerHTML=''; [...puz.across,...puz.down].forEach(w=>{const s=document.createElement('span');s.textContent=w;wbox.appendChild(s);});
   const sbox=document.getElementById('endStatsBox'); if(isToday){ sbox.style.display=''; renderStatsBlock(sbox, win?bkl:-1); } else { sbox.style.display='none'; sbox.innerHTML=''; }
   document.querySelector('#endOverlay .rbtns').style.display=isToday?'flex':'none';
   if(isToday){ endCd.style.display='flex'; updateCountdown(); } else { endCd.style.display='none'; }
