@@ -1026,7 +1026,7 @@ function showEnd(win){ render(); renderActions(); showEndFor(dayIdCur,win,swapsL
 function todayResult(){ const sv=loadMap()[todayId()]; if(sv&&(sv.phase==='win'||sv.phase==='lose')) return {win:sv.phase==='win',left:(typeof sv.swapsLeft==='number')?sv.swapsLeft:0}; return null; }
 
 /* ---- arşiv ---- */
-function renderArchive(){ const list=document.getElementById('archiveList'); list.innerHTML=''; const tN=dayNo(todayId()); const m=loadMap(); for(let n=tN;n>=1;n--){ const id=idFromNo(n); const sv=m[id]; let status=''; if(sv){ if(sv.phase==='win') status=bklIcons(clamp(sv.swapsLeft,0,5),'bkl-mini'); else if(sv.phase==='lose') status='-'; else if(sv.swapsLeft<MAX_SWAPS) status='<span class="ip">Devam ediyor</span>'; } const row=document.createElement('button'); row.className='archrow'+(id===dayIdCur?' cur':''); row.innerHTML='<span class="an">#'+n+'</span><span class="ad">'+trDate(id)+'</span><span class="as">'+status+'</span>'; row.onclick=async()=>{ document.getElementById('archiveOverlay').classList.remove('show'); await loadDay(id); if(phase==='play'&&!helpHidden()){ document.getElementById('dontShowRow').style.display='flex'; document.getElementById('helpOverlay').classList.add('show'); } }; list.appendChild(row); } }
+function renderArchive(){ const list=document.getElementById('archiveList'); list.innerHTML=''; const tN=dayNo(todayId()); const m=loadMap(); for(let n=tN;n>=dayNo(Math.floor(Date.UTC(2026,9,1)/86400000));n--){ const id=idFromNo(n); const sv=m[id]; let status=''; if(sv){ if(sv.phase==='win') status=bklIcons(clamp(sv.swapsLeft,0,5),'bkl-mini'); else if(sv.phase==='lose') status='-'; else if(sv.swapsLeft<MAX_SWAPS) status='<span class="ip">Devam ediyor</span>'; } const row=document.createElement('button'); row.className='archrow'+(id===dayIdCur?' cur':''); row.innerHTML='<span class="an">#'+n+'</span><span class="ad">'+trDate(id)+'</span><span class="as">'+status+'</span>'; row.onclick=async()=>{ document.getElementById('archiveOverlay').classList.remove('show'); await loadDay(id); if(phase==='play'&&!helpHidden()){ document.getElementById('dontShowRow').style.display='flex'; document.getElementById('helpOverlay').classList.add('show'); } }; list.appendChild(row); } }
 
 /* ---- gün yükle ---- */
 async function loadDay(id){
@@ -1098,8 +1098,10 @@ if(!helpHidden() && (location.hash||"")!=="#arsiv"){ document.getElementById('he
 </section>
 
 <footer class="tp-footer">
-  Bir <a href="https://trpuzzle.com/">TrPuzzle</a> oyunu ·
-  <a href="https://trpuzzle.com/">Anasayfa</a> · <a href="https://trpuzzle.com/hakkinda.html">Hakkımızda</a> · <a href="https://trpuzzle.com/gizlilik.html">Gizlilik</a> · <a href="https://trpuzzle.com/kosullar.html">Koşullar</a>
+  Bir <a href="/">TrPuzzle</a> oyunu
+  <nav aria-label="Site bilgileri">
+    <a href="/">Anasayfa</a> · <a href="/hakkinda.html">Hakkımızda</a> · <a href="/iletisim.html">İletişim</a> · <a href="/gizlilik.html">Gizlilik ve Çerezler</a> · <a href="/kosullar.html">Kullanım Koşulları</a>
+  </nav>
 </footer>
 <style>
 /* ── TrPuzzle bilgi bölümü ve mini footer ── */
