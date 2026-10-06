@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+<script defer id="tp-privacy-script" src="/assets/privacy-controls.js?v=consent-v1"></script>
+<meta name="google-adsense-account" content="ca-pub-7993571496408496">
+
 <script src="/assets/game-remote.js"></script>
 <!-- game-security-start -->
 <script>
@@ -186,7 +189,7 @@
   .tile,#board{touch-action:none}
   .tile.dragsrc{opacity:.28}
   .tile.drop{box-shadow:0 0 0 4px var(--ink),0 4px 0 var(--tsh);z-index:2}
-  .dragclone{position:fixed;z-index:100;pointer-events:none;border-radius:12px;box-shadow:0 14px 26px rgba(0,0,0,.35);transform:scale(1.08);display:flex;align-items:center;justify-content:center;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.18)}
+  .dragclone{position:fixed;left:0;top:0;transition:none;animation:none;will-change:transform;z-index:100;pointer-events:none;border-radius:12px;box-shadow:0 14px 26px rgba(0,0,0,.35);transform:scale(1.08);display:flex;align-items:center;justify-content:center;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.18)}
   @keyframes pop{0%{transform:scale(.85)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
 
   .hint{max-width:440px;text-align:center;font-size:13px;color:var(--muted);margin:10px 6px 0;line-height:1.5;min-height:20px}
@@ -381,7 +384,7 @@ html.tp-splash-acik{background:#fff}
 </script>
 <!-- game-clock-end -->
 <style>#tpPlay:not([data-progress-ready]){visibility:hidden}</style>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7993571496408496" crossorigin="anonymous"></script>
+
 </head>
 <body>
 <div id="tp-splash">
@@ -841,7 +844,7 @@ const STORE_KEY = "petek-progress-v1";
 const STATS_KEY = "waffle-stats-v1";
 const THEME_KEY = "waffle-theme-v1";
 const HELP_KEY  = "waffle-help-hidden-v1";
-const DAY1 = Math.floor(Date.UTC(2026,7,1)/86400000);   // 1 Ağustos 2026 = #1
+const DAY1 = Math.floor(Date.UTC(2026,9,1)/86400000);   // 1 Ağustos 2026 = #1
 
 const boardEl=document.getElementById('board');
 const swapNumEl=document.getElementById('swapNum');
@@ -854,7 +857,7 @@ const subLblEl=document.getElementById('subLbl');
 
 let solution, cur, swapsLeft, selected=null, curPuzzle, phase='play', dayIdCur=null, TODAY=null;
 let lostRanks=null;   /* kaybedilen tahtanin son renkleri (paylasim icin) */
-let dragStart=null, dragging=false, dragCloneEl=null, dcw=0, dch=0, dropCell=null;
+let dragStart=null, dragging=false, dragCloneEl=null, dcw=0, dch=0, dropCell=null, dragFrame=0, dragPoint=null;
 let rankCur=null;
 let endShown=null;   /* sonuc ekraninda su an gosterilen gun */
 function isLocked(r,c){ return !!(rankCur && rankCur[r] && rankCur[r][c]===2); }
@@ -921,13 +924,19 @@ async function doSwap(ar,ac,br,bc){
 /* ---- tut & sürükle (mouse + dokunmatik) ---- */
 function tileAt(x,y){ const el=document.elementFromPoint(x,y); if(!el)return null; const t=el.closest('.tile'); if(!t||t.classList.contains('hole')||t.classList.contains('dragclone')||t.dataset.r===undefined) return null; const rr=+t.dataset.r, cc=+t.dataset.c; if(isLocked(rr,cc)) return null; return {r:rr,c:cc}; }
 function clearDrop(){ if(dropCell){ const el=boardEl.querySelector('[data-r="'+dropCell.r+'"][data-c="'+dropCell.c+'"]'); if(el) el.classList.remove('drop'); dropCell=null; } }
-function beginDrag(){ dragging=true; selected=null; const el=boardEl.querySelector('[data-r="'+dragStart.r+'"][data-c="'+dragStart.c+'"]'); if(!el){dragging=false;return;} const rect=el.getBoundingClientRect(); dcw=rect.width; dch=rect.height; dragCloneEl=el.cloneNode(true); dragCloneEl.classList.add('dragclone'); dragCloneEl.style.width=dcw+'px'; dragCloneEl.style.height=dch+'px'; document.body.appendChild(dragCloneEl); el.classList.add('dragsrc'); }
-function moveClone(x,y){ if(dragCloneEl){ dragCloneEl.style.left=(x-dcw/2)+'px'; dragCloneEl.style.top=(y-dch/2)+'px'; } }
-function highlightTarget(x,y){ clearDrop(); const t=tileAt(x,y); if(t && !(t.r===dragStart.r&&t.c===dragStart.c)){ const el=boardEl.querySelector('[data-r="'+t.r+'"][data-c="'+t.c+'"]'); if(el){ el.classList.add('drop'); dropCell={r:t.r,c:t.c}; } } }
-function endDrag(){ if(dragCloneEl){ dragCloneEl.remove(); dragCloneEl=null; } clearDrop(); dragging=false; }
-function onPointerDown(e,r,c){ if(phase!=='play'||remotePending)return; if(isLocked(r,c))return; if(e.button!==undefined && e.button!==0) return; e.preventDefault(); dragStart={r,c,x:e.clientX,y:e.clientY}; dragging=false; }
-function onPointerMove(e){ if(!dragStart)return; if(!dragging){ const dx=e.clientX-dragStart.x, dy=e.clientY-dragStart.y; if(dx*dx+dy*dy<49) return; beginDrag(); if(!dragging) return; } moveClone(e.clientX,e.clientY); highlightTarget(e.clientX,e.clientY); }
-function onPointerUp(e){ if(!dragStart)return; if(dragging){ const t=tileAt(e.clientX,e.clientY); const src=dragStart; endDrag(); if(t && !(t.r===src.r&&t.c===src.c)){ selected=null; doSwap(src.r,src.c,t.r,t.c); } else { render(); } } else { onTile(dragStart.r,dragStart.c); } dragStart=null; dragging=false; }
+function beginDrag(){ dragging=true; selected=null; const el=boardEl.querySelector('[data-r="'+dragStart.r+'"][data-c="'+dragStart.c+'"]'); if(!el){dragging=false;return;} const rect=el.getBoundingClientRect(); dcw=rect.width; dch=rect.height; dragCloneEl=el.cloneNode(true); dragCloneEl.classList.remove('sel','pulse','drop','dragsrc'); dragCloneEl.classList.add('dragclone'); dragCloneEl.style.width=dcw+'px'; dragCloneEl.style.height=dch+'px'; document.body.appendChild(dragCloneEl); el.classList.add('dragsrc'); }
+function moveClone(x,y){ if(dragCloneEl){ dragCloneEl.style.transform='translate3d('+(x-dcw/2)+'px,'+(y-dch/2)+'px,0) scale(1.08)'; } }
+function highlightTarget(x,y){
+  let t=tileAt(x,y);
+  if(t && t.r===dragStart.r && t.c===dragStart.c)t=null;
+  if((!t&&!dropCell)||(t&&dropCell&&t.r===dropCell.r&&t.c===dropCell.c))return;
+  clearDrop();
+  if(t){const el=boardEl.querySelector('[data-r="'+t.r+'"][data-c="'+t.c+'"]');if(el){el.classList.add('drop');dropCell=t;}}
+}
+function endDrag(){ if(dragFrame)cancelAnimationFrame(dragFrame); dragFrame=0;dragPoint=null; if(dragCloneEl){ dragCloneEl.remove(); dragCloneEl=null; } clearDrop(); dragging=false; }
+function onPointerDown(e,r,c){ if(dragStart||e.isPrimary===false||phase!=='play'||remotePending)return; if(isLocked(r,c))return; if(e.button!==undefined && e.button!==0) return; e.preventDefault(); dragStart={r,c,x:e.clientX,y:e.clientY,pointerId:e.pointerId}; dragging=false; }
+function onPointerMove(e){ if(!dragStart||e.pointerId!==dragStart.pointerId)return; if(!dragging){ const dx=e.clientX-dragStart.x, dy=e.clientY-dragStart.y; if(dx*dx+dy*dy<49) return; beginDrag(); if(!dragging) return; } dragPoint={x:e.clientX,y:e.clientY}; if(!dragFrame)dragFrame=requestAnimationFrame(()=>{dragFrame=0;if(!dragging||!dragPoint)return;const p=dragPoint;highlightTarget(p.x,p.y);moveClone(p.x,p.y);}); }
+function onPointerUp(e){ if(!dragStart||e.pointerId!==dragStart.pointerId)return; if(dragging){ const t=tileAt(e.clientX,e.clientY); const src=dragStart; endDrag(); if(t && !(t.r===src.r&&t.c===src.c)){ selected=null; doSwap(src.r,src.c,t.r,t.c); } else { render(); } } else { onTile(dragStart.r,dragStart.c); } dragStart=null; dragging=false; }
 function pulse(r,c){ const el=boardEl.querySelector('[data-r="'+r+'"][data-c="'+c+'"]'); if(el){el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),300);} }
 function isSolved(){return !!(remoteSession&&remoteSession.view.win);}
 
@@ -1172,7 +1181,7 @@ if(!helpHidden() && (location.hash||"")!=="#arsiv"){ document.getElementById('he
     if(de) de.textContent=d.getDate()+" "+ay[d.getMonth()]+" "+d.getFullYear();
   }catch(e){}
   try{
-    var DAY1=Math.floor(Date.UTC(2026,7,1)/86400000);
+    var DAY1=Math.floor(Date.UTC(2026,9,1)/86400000);
     var td=TrPuzzleClock.calendar();
     var tid=Math.floor(Date.UTC(td.getFullYear(),td.getMonth(),td.getDate())/86400000);
     var no=tid-DAY1+1;
@@ -1319,7 +1328,66 @@ if(!helpHidden() && (location.hash||"")!=="#arsiv"){ document.getElementById('he
     Baklava:['#endOverlay .modal'], Arala:['#statsModal .modal'],
     Tilkile:['#end-modal .modal','#stats-modal .modal'], Kesme:['#statsModal .sheet'], 'Bağla':['#perdeSonuc .modal','#perdeIst .modal']
   };
+  // Result panels keep sharing focused; next-puzzle countdowns are hidden.
+  const resultClockStyle=document.createElement('style');
+  resultClockStyle.textContent='#overlay .geri-sayim,#perde-sonuc .geri-sayim,#perde-istatistik .geri-sayim,#endOverlay #endCd,#end-modal #countdown{display:none!important}';
+  document.head.append(resultClockStyle);
+  // Keep the page anchored while any dialog is open, including stacked dialogs.
+  const dialogSelector='.perde,.modal-overlay,.overlay,#howto,#settings,.modal:has(> .sheet)';
+  let scrollLock=null, touchY=null;
+  function visibleDialogs(){
+    return Array.from(document.querySelectorAll(dialogSelector)).filter(el=>{
+      const css=getComputedStyle(el);
+      return el.getClientRects().length && css.display!=='none' && css.visibility!=='hidden';
+    });
+  }
+  function saveStyles(el,props){return props.map(p=>[p,el.style.getPropertyValue(p),el.style.getPropertyPriority(p)]);}
+  function restoreStyles(el,saved){saved.forEach(([p,v,priority])=>v?el.style.setProperty(p,v,priority):el.style.removeProperty(p));}
+  function syncDialogScroll(){
+    const open=visibleDialogs().length>0;
+    if(open&&!scrollLock){
+      const body=document.body,html=document.documentElement;
+      scrollLock={x:window.scrollX,y:window.scrollY,body:saveStyles(body,['position','top','left','width','overflow']),html:saveStyles(html,['overflow','scroll-behavior'])};
+      body.style.setProperty('position','fixed','important');
+      body.style.setProperty('top',-scrollLock.y+'px','important');
+      body.style.setProperty('left',-scrollLock.x+'px','important');
+      body.style.setProperty('width','100%','important');
+      body.style.setProperty('overflow','hidden','important');
+      html.style.setProperty('overflow','hidden','important');
+    }else if(!open&&scrollLock){
+      const saved=scrollLock;scrollLock=null;
+      restoreStyles(document.body,saved.body);
+      restoreStyles(document.documentElement,saved.html);
+      document.documentElement.style.setProperty('scroll-behavior','auto','important');
+      window.scrollTo(saved.x,saved.y);
+      const behavior=saved.html.filter(([p])=>p==='scroll-behavior');
+      restoreStyles(document.documentElement,behavior);
+    }
+  }
+  const scrollStyle=document.createElement('style');
+  scrollStyle.textContent=`${dialogSelector}{overscroll-behavior:contain} .perde>.kutu,.perde>.modal,.overlay>.modal,.modal-overlay>.modal,.modal-overlay>.modal-card,.modal>.sheet{overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch}`;
+  document.head.append(scrollStyle);
+  document.addEventListener('touchstart',e=>{touchY=e.touches.length===1?e.touches[0].clientY:null;},{passive:true});
+  document.addEventListener('touchmove',e=>{
+    if(!scrollLock||touchY===null||e.touches.length!==1)return;
+    const y=e.touches[0].clientY,delta=touchY-y;touchY=y;
+    if(!delta)return;
+    const dialogs=visibleDialogs();
+    let el=e.target instanceof Element?e.target:null;
+    if(el&&dialogs.some(d=>d.contains(el))){
+      while(el&&el!==document.body){
+        const css=getComputedStyle(el),max=el.scrollHeight-el.clientHeight;
+        if(/auto|scroll/.test(css.overflowY)&&max>1&&((delta>0&&el.scrollTop<max-1)||(delta<0&&el.scrollTop>1)))return;
+        el=el.parentElement;
+      }
+    }
+    if(e.cancelable)e.preventDefault();
+  },{passive:false});
+  document.addEventListener('touchend',()=>{touchY=null;},{passive:true});
+  document.addEventListener('touchcancel',()=>{touchY=null;},{passive:true});
+
   function refreshNext() {
+    syncDialogScroll();
     if(!window.TrPuzzleProgress) return;
     const progress=window.TrPuzzleProgress(new Date());
     const current=progress[game];
@@ -1339,7 +1407,7 @@ if(!helpHidden() && (location.hash||"")!=="#arsiv"){ document.getElementById('he
     });
   }
   let queued=false;
-  new MutationObserver(()=>{if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;refreshNext();});}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','class']});
+  new MutationObserver(records=>{if(records.every(r=>r.type==='attributes'&&r.attributeName==='style'&&!r.target.matches(dialogSelector)))return;if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;refreshNext();});}).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','class','style']});
   refreshNext();
 })();
 
